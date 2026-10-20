@@ -1,8 +1,8 @@
-package restaurant;
+package entity;
 
 /**
  * Represents a dining table in the restaurant.
- * A table remains occupied until its assigned customer pays or leaves.
+ * A table remains occupied continuously until its customer pays or leaves.
  */
 public class Table {
     private final int tableNo;
@@ -14,9 +14,7 @@ public class Table {
     }
 
     /**
-     * Checks if the table is currently unoccupied.
-     *
-     * @return true if free, false if occupied
+     * Checks if the table is currently free.
      */
     public boolean isFree() {
         return currentCustomer == null;
@@ -25,7 +23,7 @@ public class Table {
     /**
      * Assigns a customer to this table.
      *
-     * @param c the customer to seat
+     * @param c the customer being seated
      * @throws InvalidActionException if the table is already occupied
      */
     public void assign(Customer c) throws InvalidActionException {
@@ -36,7 +34,7 @@ public class Table {
     }
 
     /**
-     * Overloaded assign() to mark the table as occupied.
+     * Overloaded assign() to mark the table occupied.
      *
      * @throws InvalidActionException if the table is already occupied
      */
@@ -47,7 +45,7 @@ public class Table {
     }
 
     /**
-     * Releases this table, making it free for another customer.
+     * Releases this table, freeing it for new arrivals.
      */
     public void release() {
         this.currentCustomer = null;
@@ -57,16 +55,12 @@ public class Table {
         return tableNo;
     }
 
-    public int getNumber() {
-        return tableNo;
-    }
-
     public Customer getCurrentCustomer() {
         return currentCustomer;
     }
 
     @Override
     public String toString() {
-        return "Table " + tableNo + (isFree() ? " [Free]" : " [Occupied by Customer " + currentCustomer.getId() + "]");
+        return "Table " + tableNo + (isFree() ? " (Free)" : " (Occupied by Customer " + currentCustomer.getId() + ")");
     }
 }

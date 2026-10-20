@@ -1,91 +1,125 @@
-# SC2002 Restaurant Rush — Stage 1 Design Report Draft
-
-**Course**: SC2002 Object-Oriented Design & Programming  
-**Component**: Stage 1 Core Staff & Table Architecture  
-**Deliverable**: Key Abstractions Table & SOLID Principles Analysis  
-
----
-
-## 1. Key Abstractions and Responsibilities
-
-The system follows the **Boundary-Control-Entity (BCE)** architectural pattern to cleanly decouple user interaction, game flow coordination, domain entities, and error handling.
-
-| Abstraction | Pattern Role | Core Responsibilities | Key Collaborators | Invariants & Encapsulation |
-|---|---|---|---|---|
-| **`Staff`** *(abstract)* | Entity | Base abstraction for all restaurant staff members. Tracks turn-based action accounting (`actedThisTurn`) and validates action quotas. | Subclasses (`Waiter`, `Chef`, `Cashier`, `Host`) | At most one completed task per staff member per turn. Action state cannot be bypassed. |
-| **`Waiter`** | Entity | Handles front-of-house customer interactions: seating queued customers, taking dining orders, and serving prepared dishes. | `Customer`, `Table`, `Order`, `Menu`, `InvalidActionException` | Validates preconditions before calling `markActed()`. Failed choices never consume staff turn quota. |
-| **`Cashier`** | Entity | Processes customer payments according to FIFO/priority timing (`readyToPayTurn < turn`), releases occupied tables, and dispatches financial records. | `Customer`, `GameStats`, `Table` | Cannot charge before `READY_TO_PAY`. Charges earliest eligible customer; ties broken by lower ID. |
-| **`Chef`** | Entity | Handles back-of-house kitchen preparation by advancing order preparation units by 1 per turn based on manager priority. | `Order`, `Staff`, `InvalidActionException` | Prepares at most 1 unit per turn. Cannot cook orders that are already `READY` or `SERVED`. |
-| **`Table`** | Entity | Manages dining table state, tracks customer occupancy, and guards against double-seating. | `Customer`, `InvalidActionException` | Table remains occupied continuously until the seated customer pays or leaves. |
-| **`GameStats`** | Entity | Centralized aggregator for game outcomes: revenue, served count, unhappy departures, turns used, and average satisfaction. | `Cashier`, `GameController` | Revenue strictly excludes unpaid or abandoned orders. Average satisfaction returns `OptionalDouble.empty()` when 0 customers paid (displaying `N/A`). |
-| **`Customer`** | Entity | Represents the diner lifecycle (`WAITING` → `SEATED` → `ORDERED` → `SERVED` → `READY_TO_PAY` → `PAID` / `LEFT_UNHAPPY`). Encapsulates satisfaction decay and eating timing. | `Table`, `Order`, `MenuItem`, `Menu` | Satisfaction drops by 8/turn while waiting/seated/ordered. Drops cease immediately once `SERVED`. Eating takes 1 turn. |
-| **`Order`** | Entity | Tracks kitchen progress (`completedUnits` / `requiredUnits`) and status (`PENDING` → `COOKING` → `READY` → `SERVED`). | `Customer`, `MenuItem`, `OrderStatus` | Status automatically transitions to `READY` when `completedUnits >= requiredUnits`. |
-| **`MenuItem`** | Entity | Immutable descriptor of a dish, encapsulating its name, base price, and required preparation units. | `Menu`, `Order` | Immutable attributes prevent runtime pricing corruption. |
-| **`Menu`** | Entity | Registry of available restaurant menu items (Burger, Pasta, Salad). | `MenuItem` | Returns unmodifiable collection of items. |
-| **`GameController`** | Control | Orchestrates turn sequence, schedules arrivals across 18 turns, handles manager command dispatch, and evaluates win/defeat conditions. | `Waiter`, `Chef`, `Cashier`, `Table`, `GameStats` | Enforces 18-turn game boundary, 2-unhappy-departure defeat threshold, and max 5 payable customers constraint. |
-| **`RestaurantRush`** | Boundary | CLI user interface presenting turn statuses, menus, and choices. Catches `InvalidActionException` to allow retry. | `GameController`, `Scanner` | Captures manager input and provides interactive as well as reproducible script execution (`--victory`, `--defeat`). |
-| **`InvalidActionException`** | Exception | Domain exception thrown upon rule violations (e.g., seating at occupied table, taking order when not seated, serving unready food). | All staff and entity classes | Preserves failure rationale; enables clean retry loops without state corruption. |
+# SC2002 Restaurant Rush — Stage 1 Design Report
+**Group Members**: Raghav, Abhishek, Aaryan, Aekas, Ayush  
+**Aekas's Role**: `Staff`, `Waiter`, `Cashier`, `Table`, `GameStats`, `InvalidActionException`  
+**Report Contribution**: Key Abstractions Table & SOLID Principles (Stage 1)
 
 ---
 
-## 2. SOLID Design Principles Analysis
+## 1. Key Abstractions Table
 
-The implementation strictly demonstrates and adheres to SOLID principles in areas genuinely reflected in the codebase:
-
-### 2.1 Single Responsibility Principle (SRP)
-Each class in the design has a single, well-defined reason to change:
-- **`Waiter`**: Focuses exclusively on dining room service operations (`seat`, `takeOrder`, `serve`). It does not cook food (delegated to `Chef`), does not manage financial bookkeeping (delegated to `Cashier` and `GameStats`), and does not track table occupancy internally (delegated to `Table`).
-- **`Cashier`**: Focuses solely on financial settlement and table clearance for customers who have completed eating. It does not decide manager priority or customer dining flow.
-- **`Table`**: Has the sole responsibility of tracking whether a physical seat is free or occupied and maintaining reference to the currently seated customer.
-- **`GameStats`**: Serves as a pure metrics aggregator. It does not dictate game flow or customer lifecycle, only accumulating metrics when notified by actors.
-- **`Staff`**: Abstracts turn-action accounting (`startNewTurn`, `hasActedThisTurn`, `markActed`, `checkCanAct`). Subclasses do not duplicate turn flag management.
-
-### 2.2 Open/Closed Principle (OCP)
-The system is open for extension but closed for modification:
-- **Extending Staff Roles**: In Stage 3, when the `Host` role is introduced to seat queued customers, it extends `Staff` seamlessly without modifying `Staff`, `Waiter`, or `Chef`.
-- **Customer Specialization & Dynamic Pricing**: `Customer.calculateBill(MenuItem item)` returns `item.getPrice()` by default for `RegularCustomer`. In Stage 2, `VIPCustomer` overrides `calculateBill(item)` to apply a 10% discount, and `CriticCustomer` overrides order preferences or reaction rules. Neither `Waiter.takeOrder`, `Cashier.processNextPayment`, nor the turn loop require modifications or `instanceof` checks.
-- **Menu Item Extensibility**: `MenuItem` allows Stage 3 `ComboMeal` composition without altering the `Order` or `Chef` preparation mechanics.
-
-### 2.3 Liskov Substitution Principle (LSP)
-Subclasses can substitute their parent classes without violating system contracts or behavioral expectations:
-- `Waiter`, `Chef`, and `Cashier` all inherit from `Staff`. Any collection or loop operating on `Staff` (such as `startNewTurn()` at the start of each round in `GameController`) can invoke methods polymorphically without needing downcasting or special casing.
-- The contract of `Customer` guarantees that any derived customer type in Stage 2 (`VIPCustomer`, `CriticCustomer`) adheres to the state lifecycle (`WAITING` → `SEATED` → `ORDERED` → `SERVED` → `READY_TO_PAY` → `PAID`). Substitution never breaks table assignment, order placement, or cashier collection.
-
-### 2.4 Interface Segregation Principle (ISP)
-Rather than forcing broad interfaces with unused methods, classes expose cohesive, client-specific APIs:
-- `Table` exposes only what is needed for seating management: `isFree()`, `assign(c)`, `release()`, and `getTableNo()`. Clients do not see culinary or financial operations on a table.
-- `Staff` exposes only action quota checks and turn resets. Waiter-specific actions (`seat`, `takeOrder`, `serve`) are isolated strictly to `Waiter`, preventing `Chef` from being forced to implement seating methods or throw `UnsupportedOperationException`.
-
-### 2.5 Dependency Inversion Principle (DIP)
-- High-level orchestrators (`GameController`) depend on abstract role abstractions and cohesive domain models rather than low-level tightly coupled procedural scripts.
-- `GameStats.getAverageSatisfaction()` returns `java.util.OptionalDouble`. This inverts the dependency on null checks or magic numbers (e.g. returning `-1` or `0.0`), allowing boundary classes (`RestaurantRush`) to handle the presence or absence of payments safely and declaratively.
+| Abstraction | Type | Responsibility | Principle / Pattern Reflected |
+|---|---|---|---|
+| **`Staff`** | Entity | Base abstract class managing turn-based action accounting (`actedThisTurn`) and action availability (`checkCanAct`). | **ISP / Encapsulation**: Shared "one task per turn" quota logic only; subclasses expose specific actions without fat interfaces. |
+| **`Waiter`** | Entity | Coordinates dining room operations: seating queued customers, taking orders, and serving ready dishes. Validates preconditions before calling `markActed()`. | **SRP / Fail-Safe Validation**: Precondition validation before state mutation ensures failed choices never consume the staff turn task. |
+| **`Cashier`** | Entity | Processes payments for oldest `READY_TO_PAY` customers whose `readyToPayTurn < turn`. Releases tables and dispatches financial records. | **SRP / DIP**: Encapsulates settlement logic; interacts with `Customer` (abstract) and `GameStats`. |
+| **`Table`** | Entity | Represents dining tables (exactly 2 in Stage 1). Tracks occupancy status, assigns customers, and releases upon checkout. | **Encapsulation / Low Coupling**: Guards table state; throws checked exception on double-seating attempts. |
+| **`GameStats`** | Entity | Aggregates game metrics across turns: revenue (cents), served count, unhappy departures, turns used, and average satisfaction. | **SRP**: Changes only when scoring rules change. Returns `OptionalDouble` (empty = `N/A`) to decouple callers from null checks. |
+| **`InvalidActionException`** | Exception | Custom checked exception carrying descriptive failure rationale when an invalid manager choice is attempted. | **Robustness / Retry Loop**: Caught by `GameController` to re-prompt the manager without penalty or game crash. |
+| **`Customer`** *(abstract)* | Entity | Base entity tracking the customer state machine (`WAITING` → `SEATED` → `ORDERED` → `EATING` → `READY_TO_PAY` → `PAID` / `LEFT`), satisfaction decay, and billing. | **Encapsulation / OCP**: Satisfaction has no setter and is clamped [0..100]. Open for Stage 2 `VIPCustomer` and `CriticCustomer`. |
+| **`RegularCustomer`** | Entity | Concrete customer losing 8 satisfaction points per waiting turn and paying full price. | **LSP**: Adheres strictly to the `Customer` state machine and satisfaction bounds. |
+| **`Order`** | Entity | Tracks kitchen cooking progress (`unitsDone`/`prepUnits`) and lifecycle (`IN_PREPARATION` → `READY` → `SERVED` → `PAID` / `CANCELLED`). | **Encapsulation**: Automatically transitions to `READY` on completion of the final preparation unit inside `advanceOneUnit()`. |
+| **`MenuItem`** | Entity | Immutable descriptor of a dish: name, price in integer cents, and required preparation units. | **Immutability / Encapsulation**: All fields private final; prevents runtime pricing corruption. |
+| **`Menu`** | Entity | Registry of available restaurant dishes (Salad $9.00/1u, Burger $15.00/1u, Pasta $18.00/2u). | **High Cohesion**: Decouples menu catalog management from staff and order processing. |
+| **`Chef`** | Entity | Advances cooking preparation by 1 unit per turn on orders in `IN_PREPARATION` status. | **SRP**: Back-of-house food preparation only; validates order state before acting. |
+| **`Money`** | Utility | Pure static helper converting integer cents to formatted dollar strings (e.g., 1500 -> `$15.00`). | **Information Hiding**: Prevents IEEE 754 floating-point rounding errors across the domain. |
+| **`Restaurant`** | Entity | State container holding tables, queue, staff, menu, and stats. Lookup methods only. | **Anti-God Class**: Pure state repository; avoids embedding procedural game rules. |
+| **`GameConfig`** | Constants | Holds game baseline settings: 18 turns, 2 tables, and arrival turns {1, 4, 7, 10, 13, 16}. | **Separation of Concerns**: Centralizes tuning parameters. |
+| **`ArrivalSchedule`** | Control | Generates scheduled customer arrivals across 18 turns. | **SRP / OCP**: Changes only when arrival timing changes. Registers VIP/Critic in Stage 2. |
+| **`Objective`** | Control | Evaluates end-of-game victory targets (>= 4 paid, >= $45.00, avg satisfaction >= 60.0). | **SRP**: Decoupled from game loop; changes only if win/loss criteria change. |
+| **`GameController`** | Control | Sequences the strict 6-step turn loop (arrivals, waiter, chef, eating/payment, waiting/abandonment, results). | **Low Coupling / High Cohesion**: Sequences steps; catches `InvalidActionException` to retry. |
+| **`ConsoleUI`** | Boundary | CLI input/output; rejects invalid input strings and numbers without crashing. | **SRP**: Pure presentation layer; contains no business rules. |
 
 ---
 
-## 3. Trade-offs and Alternative Designs Considered
+## 2. Layered Architecture & Dependencies
 
-### Alternative 1: Monolithic Staff Class vs. Role-Based Inheritance Hierarchy
-- **Alternative Considered**: Having a single concrete `Staff` class with an `enum Role { WAITER, CHEF, CASHIER }` containing a large switch statement in an `executeAction()` method.
-- **Trade-off & Rationale**: The monolithic approach was rejected because it violates SRP and OCP. Adding a new role (like the `Host` in Stage 3) would require modifying existing methods and risk regressions. The subclass hierarchy (`Staff` → `Waiter`, `Chef`, `Cashier`) encapsulates role-specific behavior, validates preconditions cleanly, and ensures strong compile-time type safety.
+The project follows a 3-layer architecture (`boundary`, `control`, `entity`), maintaining strict top-down dependency flow:
 
-### Alternative 2: Boolean Return Codes vs. Custom Checked Exception (`InvalidActionException`)
-- **Alternative Considered**: Having methods return `boolean` (e.g., `boolean seat(Customer c, Table t)`) to indicate success or failure.
-- **Trade-off & Rationale**: Return codes fail to convey *why* an action failed (e.g., distinguishing between "Customer is not in queue" vs. "Table is occupied" vs. "Waiter already acted"). By throwing `InvalidActionException` before state modification and before `markActed()`, we guarantee:
-  1. Atomic state transitions: either the action succeeds completely or no state changes.
-  2. The staff action quota is strictly preserved on failure, fulfilling the core rule: *"An invalid choice must explain why it failed and let the manager choose again, without using up the staff task."*
+```
++-------------------------------------------------------------+
+|                 BOUNDARY: ConsoleUI                         |
++-------------------------------------------------------------+
+                               |
+                               v
++-------------------------------------------------------------+
+|         CONTROL: Main, GameController, ArrivalSchedule,     |
+|                  Objective, GameConfig                      |
++-------------------------------------------------------------+
+                               |
+                               v
++-------------------------------------------------------------+
+|    ENTITY: Staff (Waiter, Chef, Cashier), Customer, Table,  |
+|            Order, Menu, MenuItem, GameStats, Restaurant     |
++-------------------------------------------------------------+
+```
 
-### Alternative 3: Immediate Cashier Billing on Serving vs. 2-Step Eating Lifecycle (`READY_TO_PAY`)
-- **Alternative Considered**: Billing customers immediately upon `serve()`.
-- **Trade-off & Rationale**: Immediate billing violates dining realism and the project rule: *"A customer cannot eat before being served. The Cashier cannot charge before READY_TO_PAY."* Implementing the explicit `READY_TO_PAY` transition with timing condition `readyToPayTurn < turn` ensures customers spend exactly 1 turn eating, preventing tables from being prematurely cleared and creating realistic restaurant resource contention.
+| Layer | Depends On | Purpose & Responsibility |
+|---|---|---|
+| **Boundary** (`boundary`) | `entity`, `control` (for DTOs/interfaces) | Captures user inputs, sanitizes tokens, and prints domain feedback. Contains zero business rules. |
+| **Control** (`control`) | `entity`, `boundary` | Coordinates turn progression, invokes domain operations in exact order, and checks victory targets. |
+| **Entity** (`entity`) | None (self-contained domain) | Encapsulates all restaurant business logic, state machines, action quotas, and physical invariants. |
 
 ---
 
-## 4. How Player Choices Impact Game Outcomes
+## 3. SOLID Design Principles (Stage 1 Analysis)
 
-The player acts as the restaurant manager directing staff attention under strict resource constraints:
-1. **Dining Room Priority (Waiter)**: Because the Waiter can perform at most **one** task per turn, the player must balance:
-   - Seating a customer to prevent queue abandonment (saving 8 satisfaction loss/turn in queue, though seated customers still decay until served).
-   - Taking orders to keep the Chef's pipeline active.
-   - Serving completed dishes immediately to stop customer satisfaction decay (once `SERVED`, decay drops to 0).
-2. **Kitchen Priority (Chef)**: The player selects which dish the Chef works on. Prioritizing faster dishes (Salad: 1 unit) can quickly satisfy waiting customers, whereas prioritizing heavier dishes (Pasta: 2 units) clears high-revenue orders.
-3. **Action Preservation Guarantee**: If a manager makes an invalid decision (e.g. attempting to seat a customer at an occupied table), the game throws `InvalidActionException` with an explanatory message (`"Table 1 is occupied"`), leaving the Waiter's action unspent (`hasActedThisTurn() == false`) and prompting the player to re-select without penalty.
+### 3.1 Single Responsibility Principle (SRP)
+*Every class has only one reason to change, avoiding monolithic "God" classes:*
+- **`Staff` subclasses**: `Waiter` changes only if front-of-house dining flow changes (seating, order taking, serving); `Chef` changes only if cooking rules change; `Cashier` changes only if billing priority changes.
+- **`GameStats`**: Changes only if metrics calculation changes. It does not dictate game turns or customer states.
+- **`Objective`**: Changes only if victory thresholds change (paid count, revenue, average satisfaction).
+- **`ArrivalSchedule`**: Changes only if customer arrival scheduling or customer type registration changes.
+- **`ConsoleUI`**: Changes only if the console formatting or user input prompts change.
+
+### 3.2 Open/Closed Principle (OCP)
+*Classes are open for extension but closed for modification:*
+- **Customer Specialization**: `Customer` is abstract. Stage 2 adds `VIPCustomer` (10% discount, 5 loss rate) and `CriticCustomer` (12 loss rate, distinct ordering rule) as new subclasses. Because `Customer.calculateBill(basePriceCents)` and `Customer.getSatisfactionLossPerTurn()` are polymorphic, `GameController`, `Waiter`, and `Cashier` require **zero modifications** and no `instanceof` type-switching chains.
+- **Staff Extensibility**: In Stage 3, `Host` will extend `Staff` to seat queued customers alongside `Waiter`, reusing `Staff` action tracking without altering `Staff`, `Waiter`, or `Chef`.
+- **Menu Items**: `MenuItem` can be extended by `ComboMeal` in Stage 3 using composition (holding two `MenuItem` components) while still answering `getPriceCents()` and `getPrepUnits()`.
+
+### 3.3 Liskov Substitution Principle (LSP)
+*Subclasses must be substitutable for their base types without altering program correctness:*
+- `RegularCustomer` adheres strictly to the lifecycle contract of `Customer`: it follows the identical state machine (`WAITING` → `SEATED` → `ORDERED` → `EATING` → `READY_TO_PAY` → `PAID`), never skips states, and clamps satisfaction to `[0..100]`.
+- All `Staff` subclasses (`Waiter`, `Chef`, `Cashier`) honor the contract of `Staff`. At the start of each turn, `GameController` invokes `startNewTurn()` uniformly across all staff members without special-casing.
+
+### 3.4 Interface Segregation Principle (ISP)
+*Clients should not be forced to depend on methods they do not use:*
+- Rather than defining a single bloated "god staff interface" with `seat()`, `prepare()`, and `processNextPayment()`, `Staff` defines only the shared "one task per turn" quota lifecycle (`startNewTurn`, `hasActedThisTurn`, `markActed`, `checkCanAct`).
+- Each concrete staff member exposes only its cohesive operations (`Waiter.seat`, `Chef.prepare`, `Cashier.processNextPayment`). `Chef` is never forced to provide empty or throwing implementations of seating methods.
+
+### 3.5 Dependency Inversion Principle (DIP)
+*High-level modules should depend on abstractions, not concrete implementations:*
+- `GameController` and `Cashier` operate exclusively on the abstract `Customer` class rather than concrete `RegularCustomer`. Only the factory method in `ArrivalSchedule` instantiates concrete customers.
+- `GameStats.getAverageSatisfaction()` returns `java.util.OptionalDouble`. This inverts the dependency on magic values (such as `-1` or `0.0`), forcing calling presentation layers to explicitly handle the empty state (`"N/A"`).
+
+---
+
+## 4. Key Design Decisions & Trade-offs Considered
+
+### Decision 1: Precondition Validation Before Action Consumption
+- **Design Implemented**: `Waiter.seat(c, t)`, `Waiter.takeOrder(c, menu)`, and `Waiter.serve(o, turn)` perform all validation checks (queue membership, table occupancy, order readiness) *before* mutating state and *before* invoking `markActed()`.
+- **Alternative Considered**: Marking the staff member as acted upon receiving user selection, then rolling back state on failure.
+- **Trade-off & Rationale**: The rollback approach is error-prone and violates atomicity. By validating upfront and throwing checked `InvalidActionException`, actions succeed atomically or fail completely. A failed choice leaves `hasActedThisTurn()` as `false`, satisfying the requirement: *"An invalid choice must explain why it failed and let the manager choose again, without using up the staff task."*
+
+### Decision 2: Staff Role Subclasses vs. Single Staff Class with Role Enum
+- **Design Implemented**: Abstract `Staff` extended by `Waiter`, `Chef`, and `Cashier`.
+- **Alternative Considered**: A single `Staff` class with `enum StaffRole { WAITER, CHEF, CASHIER }` and a generic `executeTask()` method.
+- **Trade-off & Rationale**: The role enum approach requires extensive type switching and forces unrelated parameters across different tasks into a single signature. Subclassing provides compile-time type safety, isolates role-specific dependencies, and makes adding the `Host` in Stage 3 a purely additive change.
+
+### Decision 3: Integer Cents vs. Floating-Point Double for Money
+- **Design Implemented**: All monetary values (`MenuItem.priceCents`, `Order.billCents`, `GameStats.revenueCents`) are strictly stored as `int` cents and formatted via `Money.format()`.
+- **Alternative Considered**: Storing money as `double`.
+- **Trade-off & Rationale**: Floating-point arithmetic introduces binary rounding errors (e.g., `$0.10 + $0.20 = 0.30000000000000004`). In a commercial simulation with discounts and percentages (Stage 2 VIP 10% off, Stage 3 Happy Hour 20% off), integer cents prevent accumulator drift and ensure exact financial auditing.
+
+### Decision 4: Two-Step Dining Cycle (`EATING` → `READY_TO_PAY`)
+- **Design Implemented**: Customers served at `turn` transition to `EATING`. During turn updates, if `servedTurn < currentTurn`, they transition to `READY_TO_PAY` with `readyToPayTurn = currentTurn`. The `Cashier` collects payment only when `readyToPayTurn < currentTurn`.
+- **Alternative Considered**: Charging customers immediately upon food delivery.
+- **Trade-off & Rationale**: Immediate charging eliminates dining realism and table contention. The two-step cycle enforces the requirement that eating takes 1 full turn and guarantees tables remain occupied until the customer pays in a subsequent turn.
+
+---
+
+## 5. How Player Choices Change Game Results
+
+The base setting constraints (2 tables, 18 turns, 1 task per staff member per turn) require careful trade-off management:
+1. **Seating vs. Serving Priority**: Serving a ready dish immediately halts the customer's 8 points/turn satisfaction decay (satisfaction freezes once `EATING`). Delaying service in order to seat another customer allows the seated customer's dish to wait, leaking satisfaction.
+2. **Impact of Idling (Defeat Demonstration)**: In `tests/stage1_defeat.txt`, having the Waiter wait on turns 1, 2, and 3 delays Customer 1's entire dining lifecycle. This initial 3-turn delay ripples through all subsequent table reassignments. Although revenue ($51.00) and paid count (4) reach targets, the average satisfaction drops to 56.0 (below the 60.0 threshold), flipping the game from **VICTORY** to **DEFEAT**.
