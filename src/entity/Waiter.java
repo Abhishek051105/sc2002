@@ -1,12 +1,11 @@
-package restaurant;
+package entity;
 
 /**
- * Represents a Waiter in the restaurant.
- * Completes at most one task per turn: seating a queued customer,
- * taking an order from a seated customer, or serving a ready dish.
+ * Represents the Waiter in the restaurant dining room.
+ * Completes at most one task per turn: seating a customer,
+ * taking an order, or serving a prepared dish.
  */
 public class Waiter extends Staff {
-    private static int nextOrderId = 1;
 
     public Waiter() {
         super("Waiter", "Waiter");
@@ -18,8 +17,8 @@ public class Waiter extends Staff {
 
     /**
      * Seats a queued customer at a specified free table.
-     * Validates staff availability, queue status, and table availability
-     * before modifying state and marking the waiter as acted.
+     * Validates staff availability, customer status, and table availability
+     * before modifying state or marking the staff action completed.
      *
      * @param c the customer to seat
      * @param t the table to seat the customer at
@@ -33,7 +32,7 @@ public class Waiter extends Staff {
         if (t == null) {
             throw new InvalidActionException("Table cannot be null");
         }
-        if (c.getState() != CustomerState.WAITING) {
+        if (c.getStatus() != CustomerStatus.WAITING) {
             throw new InvalidActionException("Customer " + c.getId() + " is not in the queue");
         }
         if (!t.isFree()) {
@@ -47,9 +46,10 @@ public class Waiter extends Staff {
 
     /**
      * Takes an order from a seated customer using the restaurant menu.
+     * Food selection is determined by the customer's deterministic rule.
      *
      * @param c the customer ordering
-     * @param menu the menu to choose from
+     * @param menu the restaurant menu
      * @return the created Order
      * @throws InvalidActionException if waiter already acted or customer is not seated
      */
@@ -58,54 +58,27 @@ public class Waiter extends Staff {
         if (c == null) {
             throw new InvalidActionException("Customer cannot be null");
         }
-        if (c.getState() != CustomerState.SEATED) {
+        if (c.getStatus() != CustomerStatus.SEATED) {
             throw new InvalidActionException("Customer " + c.getId() + " is not seated");
         }
 
-        MenuItem item = c.chooseItem(menu);
+        MenuItem item = c.chooseMenuItem(menu);
         if (item == null) {
-            throw new InvalidActionException("No valid menu item chosen for Customer " + c.getId());
+            throw new InvalidActionException("No valid menu item found");
         }
 
-        double bill = c.calculateBill(item);
-        Order o = new Order(nextOrderId++, c, item, bill);
+        int billCents = c.calculateBill(item.getPriceCents());
+        Order o = new Order(c.getId(), c, item, billCents);
         c.placeOrder(o);
         markActed();
         return o;
     }
 
     /**
-     * Overloaded takeOrder() where a specific menu item is requested.
-     *
-     * @param c the customer ordering
-     * @param item the specific menu item chosen
-     * @return the created Order
-     * @throws InvalidActionException if waiter already acted or customer is not seated
-     */
-    public Order takeOrder(Customer c, MenuItem item) throws InvalidActionException {
-        checkCanAct();
-        if (c == null) {
-            throw new InvalidActionException("Customer cannot be null");
-        }
-        if (c.getState() != CustomerState.SEATED) {
-            throw new InvalidActionException("Customer " + c.getId() + " is not seated");
-        }
-        if (item == null) {
-            throw new InvalidActionException("Menu item cannot be null");
-        }
-
-        double bill = c.calculateBill(item);
-        Order o = new Order(nextOrderId++, c, item, bill);
-        c.placeOrder(o);
-        markActed();
-        return o;
-    }
-
-    /**
-     * Serves a ready order to its customer.
+     * Serves a ready order to its customer in the current turn.
      *
      * @param o the order to serve
-     * @param turn the current turn number
+     * @param turn the current game turn
      * @throws InvalidActionException if waiter already acted or order is not ready
      */
     public void serve(Order o, int turn) throws InvalidActionException {
@@ -123,9 +96,5 @@ public class Waiter extends Staff {
             c.markServed(turn);
         }
         markActed();
-    }
-
-    public static void resetOrderIdCounter() {
-        nextOrderId = 1;
     }
 }

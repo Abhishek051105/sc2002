@@ -1,9 +1,9 @@
-package restaurant;
+package entity;
 
 /**
- * Base abstract class representing a restaurant staff member.
- * Manages turn-based action accounting, ensuring staff complete at most
- * one designated task per turn.
+ * Base abstract entity representing a restaurant staff member.
+ * Enforces the shared turn-action constraint: a staff member completes
+ * at most one task per turn.
  */
 public abstract class Staff {
     protected final String name;
@@ -21,31 +21,30 @@ public abstract class Staff {
     }
 
     /**
-     * Resets action flag at the start of a new turn.
+     * Resets action quota at the start of a new turn.
      */
     public void startNewTurn() {
         this.actedThisTurn = false;
     }
 
     /**
-     * Returns whether this staff member has already acted in the current turn.
+     * Checks if the staff member has already completed a task this turn.
      */
     public boolean hasActedThisTurn() {
         return actedThisTurn;
     }
 
     /**
-     * Marks that the staff member has acted in the current turn.
+     * Marks the staff member's turn action as completed.
      */
     public void markActed() {
         this.actedThisTurn = true;
     }
 
     /**
-     * Validates whether the staff member can perform an action in this turn.
-     * Throws an InvalidActionException if the staff member has already acted.
+     * Validates that the staff member is available to act.
      *
-     * @throws InvalidActionException if already acted this turn
+     * @throws InvalidActionException if the staff member has already acted this turn
      */
     public void checkCanAct() throws InvalidActionException {
         if (actedThisTurn) {
