@@ -30,10 +30,6 @@ public abstract class Customer {
         this.paidSatisfaction = -1;
     }
 
-    // =========================
-    // Getters
-    // =========================
-
     public int getCustomerId() {
         return customerId;
     }
@@ -54,9 +50,13 @@ public abstract class Customer {
         return paidSatisfaction;
     }
 
-    // =========================
-    // Stage 2 Extension Hooks
-    // =========================
+    public int getServedTurn() {
+        return servedTurn;
+    }
+
+    public int getReadyToPayTurn() {
+        return readyToPayTurn;
+    }
 
     /**
      * Default deterministic food selection rule.
@@ -106,10 +106,6 @@ public abstract class Customer {
      */
     public abstract int getSatisfactionDecay();
 
-    // =========================
-    // Satisfaction Handling
-    // =========================
-
     /**
      * Called once at the end of the turn.
      *
@@ -133,10 +129,6 @@ public abstract class Customer {
 
         return false;
     }
-
-    // =========================
-    // State Transitions
-    // =========================
 
     public void seat() {
 
@@ -205,10 +197,6 @@ public abstract class Customer {
         paidSatisfaction = satisfaction;
         status = CustomerStatus.PAID;
     }
-
-    // =========================
-    // Helper Methods
-    // =========================
 
     public boolean hasLeft() {
         return status == CustomerStatus.LEFT;
