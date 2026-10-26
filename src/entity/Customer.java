@@ -54,6 +54,14 @@ public abstract class Customer {
         return paidSatisfaction;
     }
 
+    public int getServedTurn() {
+        return servedTurn;
+    }
+
+    public int getReadyToPayTurn() {
+        return readyToPayTurn;
+    }
+
     // =========================
     // Stage 2 Extension Hooks
     // =========================

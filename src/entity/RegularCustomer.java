@@ -1,3 +1,5 @@
+package entity;
+
 public class RegularCustomer extends Customer {
     public RegularCustomer(int customerId, int arrivalTurn) {
         super(customerId, arrivalTurn);
