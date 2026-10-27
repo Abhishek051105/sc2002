@@ -1,16 +1,38 @@
 package entity;
 
-/** Immutable dish: name, price in cents, prep units. */
 public class MenuItem {
-    private final String name;
-    private final int priceCents;
-    private final int prepUnits;
+    private int priceCents;
+    private String name;
+    private int prepUnits;
 
-    public MenuItem(String name, int priceCents, int prepUnits) {
-        throw new UnsupportedOperationException("TODO");
+    public MenuItem( String name,int priceCents, int prepUnits){
+        if (name == null || name.isEmpty()){
+            throw new IllegalArgumentException("Name cannot be empty");
+        }
+
+        if (priceCents <0 ){
+            throw new IllegalArgumentException("Price cannot be below 0");
+        }
+
+        if (prepUnits <0 ){
+            throw new IllegalArgumentException("Prep units must be greater than 0");
+        }
+        this.priceCents = priceCents;
+        this.name = name;
+        this.prepUnits = prepUnits;
+    }
+    
+    public int getPriceCents (){
+        return this.priceCents;
     }
 
-    public String getName() { throw new UnsupportedOperationException("TODO"); }
-    public int getPriceCents() { throw new UnsupportedOperationException("TODO"); }
-    public int getPrepUnits() { throw new UnsupportedOperationException("TODO"); }
+    public String getName(){
+        return this.name;
+    }
+
+    public int getPrepUnits(){
+        return this.prepUnits;
+    }
+
 }
+
