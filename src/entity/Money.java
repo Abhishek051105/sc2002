@@ -1,11 +1,16 @@
 package entity;
 
-/** Money is stored as int cents everywhere; this only formats it. */
-public final class Money {
-    private Money() { }
+public final class Money { // bc we dont want anything to extend 
+    public Money(){}
 
-    /** 1500 -> "$15.00", 2430 -> "$24.30". */
-    public static String format(int cents) {
-        throw new UnsupportedOperationException("TODO");
+    public static String format(int cents){
+        int dollar = cents / 100;
+        int remainder = cents % 100;
+        if (remainder <10){
+            return ("$"+dollar+"."+"0"+remainder);
+        }
+        return ("$"+dollar+"."+remainder);
+
     }
+
 }

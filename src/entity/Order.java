@@ -1,35 +1,79 @@
 package entity;
 
-/**
- * One order per customer, so order id == customer id.
- * The bill is locked at creation (Stage 3 Happy Hour relies on this).
- */
+
 public class Order {
-    private final int orderId;
-    private final Customer customer;
-    private final MenuItem item;
-    private final int billCents;
+    private int orderId;
+    private Customer customer;
+    private MenuItem item;
+    private int billCents;
     private int unitsDone;
     private OrderStatus status;
-
+ 
     public Order(int orderId, Customer customer, MenuItem item, int billCents) {
-        throw new UnsupportedOperationException("TODO");
+        this.orderId = orderId;
+        this.customer = customer;
+        this.item = item;
+        this.billCents = billCents;
+        this.unitsDone = 0;
+        this.status = OrderStatus.IN_PREPARATION;
     }
-
-    /** Cook one unit; flips to READY on the last unit. */
-    public void advanceOneUnit() { throw new UnsupportedOperationException("TODO"); }
-    /** Requires READY. */
-    public void markServed() { throw new UnsupportedOperationException("TODO"); }
-    /** Requires SERVED. */
-    public void markPaid() { throw new UnsupportedOperationException("TODO"); }
-    /** Only if not yet served. */
-    public void cancel() { throw new UnsupportedOperationException("TODO"); }
-
-    public boolean isReady() { throw new UnsupportedOperationException("TODO"); }
-    public int getOrderId() { throw new UnsupportedOperationException("TODO"); }
-    public Customer getCustomer() { throw new UnsupportedOperationException("TODO"); }
-    public MenuItem getItem() { throw new UnsupportedOperationException("TODO"); }
-    public int getBillCents() { throw new UnsupportedOperationException("TODO"); }
-    public int getUnitsDone() { throw new UnsupportedOperationException("TODO"); }
-    public OrderStatus getStatus() { throw new UnsupportedOperationException("TODO"); }
+       public void advanceOneUnit() {
+        if (status != OrderStatus.IN_PREPARATION) {
+            throw new IllegalStateException("Order " + orderId + " is not being prepared");
+        }
+        unitsDone = unitsDone + 1;
+        if (unitsDone == item.getPrepUnits()) {
+            status = OrderStatus.READY;
+        }
+    }
+ 
+    public void markServed() {
+        if (status != OrderStatus.READY) {
+            throw new IllegalStateException("Order " + orderId + " is not ready");
+        }
+        status = OrderStatus.SERVED;
+    }
+ 
+    public void markPaid() {
+        if (status != OrderStatus.SERVED) {
+            throw new IllegalStateException("Order " + orderId + " has not been served");
+        }
+        status = OrderStatus.PAID;
+    }
+ 
+    // customer left before getting their food
+    public void cancel() {
+        if (status == OrderStatus.SERVED || status == OrderStatus.PAID) {
+            throw new IllegalStateException("Order " + orderId + " was already served");
+        }
+        status = OrderStatus.CANCELLED;
+    }
+ 
+    public boolean isReady() {
+        return status == OrderStatus.READY;
+    }
+ 
+    public int getOrderId() {
+        return orderId;
+    }
+ 
+    public Customer getCustomer() {
+        return customer;
+    }
+ 
+    public MenuItem getItem() {
+        return item;
+    }
+ 
+    public int getBillCents() {
+        return billCents;
+    }
+ 
+    public int getUnitsDone() {
+        return unitsDone;
+    }
+ 
+    public OrderStatus getStatus() {
+        return status;
+    }
 }
