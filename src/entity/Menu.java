@@ -1,5 +1,7 @@
 package entity;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Menu {
     private ArrayList<MenuItem> items = new ArrayList<>();
@@ -15,6 +17,16 @@ public class Menu {
 
         MenuItem pasta = new MenuItem("Pasta",1800,2);
         items.add(pasta);
+    }
+
+    /** Salad $9.00 (1 unit), Burger $15.00 (1), Pasta $18.00 (2), in that order. */
+    public static Menu createDefault() {
+        return new Menu();
+    }
+
+    /** Unmodifiable view. */
+    public List<MenuItem> getItems() {
+        return Collections.unmodifiableList(items);
     }
 
     public MenuItem getItem(int index){
