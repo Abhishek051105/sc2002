@@ -47,7 +47,7 @@ public class ConsoleUI {
         } else {
             StringBuilder sb = new StringBuilder();
             for (Customer c : queue) {
-                sb.append("[C").append(c.getId())
+                sb.append("[C").append(c.getCustomerId())
                   .append(" (Sat: ").append(c.getSatisfaction()).append(")] ");
             }
             System.out.println(sb.toString().trim());
@@ -61,12 +61,12 @@ public class ConsoleUI {
             } else {
                 Customer c = t.getOccupant();
                 String orderInfo = "No Order";
-                Order o = c.getOrder();
+                Order o = restaurant.findOrder(c.getCustomerId());
                 if (o != null) {
                     orderInfo = o.getItem().getName() + " (" + o.getStatus() + ", " 
                               + o.getUnitsDone() + "/" + o.getItem().getPrepUnits() + " units)";
                 }
-                System.out.println("  Table " + t.getTableNo() + ": Seated C" + c.getId() 
+                System.out.println("  Table " + t.getTableNo() + ": Seated C" + c.getCustomerId() 
                         + " (Sat: " + c.getSatisfaction() + ", Status: " + c.getStatus() 
                         + ") | Order: " + orderInfo);
             }
@@ -90,11 +90,12 @@ public class ConsoleUI {
         System.out.println("");
         System.out.println("--- End of Turn " + turn + " Summary ---");
         System.out.println("Served Count     : " + stats.getServedCount());
-        System.out.println("Departures (Lost): " + stats.getDepartureCount());
+        System.out.println("Departures (Lost): " + stats.getUnhappyDepartures());
         System.out.println("Total Revenue    : " + revenue_str);
         System.out.println("Avg Satisfaction : " + avg_sat_str);
         System.out.println("--------------------------------");
     }
+
     /** VICTORY/DEFEAT plus which targets passed or failed. */
     public void showFinalResult(boolean won, GameStats stats, Objective objective) {
         System.out.println("");
@@ -157,14 +158,17 @@ public class ConsoleUI {
                 return WaiterTask.WAIT;
         }
     }
+
     public int askCustomerId(String prompt) {
-        System.out.print(prompt);
+        System.out.print(prompt != null && !prompt.isEmpty() ? prompt : "Enter Customer ID: ");
         return readInt(1, 100);
     }
+
     public int askTableNo(int numTables) {
         System.out.print("Enter Table Number (1 or 2): ");
         return readInt(1, numTables);
     }
+
     /** 0 = Wait */
     public int askOrderIdOrWait() {
         System.out.println("");
@@ -178,6 +182,7 @@ public class ConsoleUI {
         System.out.println(">> [Action Rejected]: " + reason);
     }
 
+    /** Arrivals, "C3 ordered Pasta", payments, departures. */
     public void showMessage(String message) {
         System.out.println(message);
     }
