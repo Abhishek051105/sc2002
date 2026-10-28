@@ -8,8 +8,6 @@ This feeds the report's "trade-offs" and "alternative design" sections.
 | 22 Oct | `ArrivalSchedule.customersArrivingAt(turn)` returns `List<Customer>` (empty if nobody arrives) instead of a single `Customer` or `null` | No null checks in the controller; more than one arrival per turn becomes a schedule change, not a controller change | Return `Customer`/`null` (draft diagram); `Optional<Customer>` |
 | 22 Oct | `ConsoleUI.showFinalResult` takes the `Objective` | UI must show which targets passed/failed without re-implementing the win rule | Pass three booleans; UI re-checks thresholds itself (duplicates the rule) |
 | 22 Oct | Loop over a copy of the customer list in step 5 | Customers leave mid-loop; removing from the list being iterated throws `ConcurrentModificationException` | `Iterator.remove()` |
-| | | | |
-
 | 23 Oct | Keep Raghav's Customer API (`seat()`, `orderTaken()`, `serve(turn)`, `finishEating(turn)`, `markPaid(turn)`, `decreaseSatisfaction()`, statuses `WAITING_FOR_FOOD`/`SERVED`) | Already written and tested by its owner; renaming gives no design gain | Rename to the draft diagram's names (`seatAt`, `placeOrder`, ...) |
 | 23 Oct | Customer does not hold its Table/Order; `Table` holds the occupant, `Order` holds the customer, `Restaurant` looks them up | Matches Raghav's existing Customer; keeps links one-directional | Two-way links (Customer <-> Table/Order), simpler lookups but more coupling |
 | 23 Oct | Added `chooseMenuItem(Menu)` and `calculateBill(int)` to Customer | Stage 2 VIP/Critic override these instead of the controller using instanceof (OCP) | Controller branches on customer type (violates OCP) |
