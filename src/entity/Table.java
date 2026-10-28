@@ -5,13 +5,32 @@ public class Table {
     private Customer occupant;
 
     public Table(int tableNo) {
-        throw new UnsupportedOperationException("TODO");
+        this.tableNo = tableNo;
+        this.occupant = null;
     }
 
-    public boolean isFree() { throw new UnsupportedOperationException("TODO"); }
-    public void assign(Customer c) { throw new UnsupportedOperationException("TODO"); }
-    public void release() { throw new UnsupportedOperationException("TODO"); }
-    public int getTableNo() { throw new UnsupportedOperationException("TODO"); }
+    public boolean isFree() {
+        return occupant == null;
+    }
+
+    // Waiter checks isFree() first, so this only fails on a programming bug
+    public void assign(Customer c) {
+        if (!isFree()) {
+            throw new IllegalStateException("Table " + tableNo + " is occupied");
+        }
+        occupant = c;
+    }
+
+    public void release() {
+        occupant = null;
+    }
+
+    public int getTableNo() {
+        return tableNo;
+    }
+
     /** null when free. */
-    public Customer getOccupant() { throw new UnsupportedOperationException("TODO"); }
+    public Customer getOccupant() {
+        return occupant;
+    }
 }
