@@ -9,14 +9,30 @@ public abstract class Staff {
     private boolean actedThisTurn;
 
     protected Staff(String roleName) {
-        throw new UnsupportedOperationException("TODO");
+        this.roleName = roleName;
+        this.actedThisTurn = false;
     }
 
-    public void startNewTurn() { throw new UnsupportedOperationException("TODO"); }
-    public boolean hasActedThisTurn() { throw new UnsupportedOperationException("TODO"); }
-    public String getRoleName() { throw new UnsupportedOperationException("TODO"); }
+    public void startNewTurn() {
+        actedThisTurn = false;
+    }
+
+    public boolean hasActedThisTurn() {
+        return actedThisTurn;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
 
     /** Throws "Waiter has already acted this turn" etc. */
-    protected void checkCanAct() throws InvalidActionException { throw new UnsupportedOperationException("TODO"); }
-    protected void markActed() { throw new UnsupportedOperationException("TODO"); }
+    protected void checkCanAct() throws InvalidActionException {
+        if (actedThisTurn) {
+            throw new InvalidActionException(roleName + " has already acted this turn");
+        }
+    }
+
+    protected void markActed() {
+        actedThisTurn = true;
+    }
 }
