@@ -1,0 +1,144 @@
+@startuml sequence-diagram
+title Restaurant Rush - Stage 1 Sequence Diagram (one turn, arrival to result)
+
+skinparam shadowing false
+autonumber
+hide footbox
+
+actor Manager
+boundary ":ConsoleUI" as UI
+control ":GameController" as GC
+control ":ArrivalSchedule" as AS
+entity ":Restaurant" as R
+entity ":Waiter" as W
+entity ":Chef" as CH
+entity ":Cashier" as CA
+entity "c:Customer" as C
+entity "t:Table" as T
+entity "o:Order" as O
+entity ":GameStats" as GS
+control ":Objective" as OBJ
+
+loop turn = 1..18
+  GC -> R : getAllStaff()
+  R --> GC : staff
+  GC -> W : startNewTurn()
+  GC -> CH : startNewTurn()
+  GC -> CA : startNewTurn()
+
+  == Step 1: Arrivals ==
+  GC -> AS : customersArrivingAt(turn)
+  alt turn in {1, 4, 7, 10, 13, 16}
+    create C
+    AS -> C : new RegularCustomer(id, turn)
+    AS --> GC : [c]
+    GC -> R : addArrival(c)
+    GC -> UI : showMessage("C1 has arrived.")
+  else no arrival
+    AS --> GC : []
+  end
+  GC -> UI : showStartOfTurn(turn, restaurant)
+
+  == Step 2: Waiter (acts before the Chef) ==
+  loop until a valid task or WAIT
+    GC -> UI : askWaiterTask()
+    UI -> Manager : prompt
+    Manager --> UI : choice
+    UI --> GC : task
+    alt task == SEAT
+      GC -> UI : askCustomerId(prompt)
+      UI --> GC : id
+      GC -> UI : askTableNo(numTables)
+      UI --> GC : tableNo
+      GC -> W : seat(c, t)
+      W -> T : assign(c)
+      W -> C : seat()
+      GC -> R : removeFromQueue(c)
+    else task == TAKE_ORDER
+      GC -> UI : askCustomerId(prompt)
+      UI --> GC : id
+      GC -> W : takeOrder(c, menu)
+      W -> C : chooseMenuItem(menu)
+      C --> W : item
+      W -> C : calculateBill(item.getPriceCents())
+      C --> W : billCents
+      create O
+      W -> O : new Order(id, c, item, billCents)
+      W -> C : orderTaken()
+      W --> GC : o
+      GC -> R : addOrder(o)
+      GC -> UI : showMessage("C1 ordered Salad.")
+    else task == SERVE
+      GC -> UI : askCustomerId(prompt)
+      UI --> GC : id
+      GC -> R : findOrder(id)
+      R --> GC : o
+      GC -> W : serve(o, turn)
+      W -> O : markServed()
+      W -> C : serve(turn)
+      GC -> GS : recordServed()
+    else task == WAIT
+      GC -> UI : showMessage("Waiter waits this turn.")
+    end
+    opt InvalidActionException
+      W --> GC : throws InvalidActionException(reason)
+      GC -> UI : showError(reason)
+      note right of GC : markActed() was not called,\nso the Waiter can still act
+    end
+  end
+
+  == Step 3: Chef ==
+  loop until a valid order or WAIT
+    GC -> UI : askOrderIdOrWait()
+    UI --> GC : orderId
+    opt orderId != 0
+      GC -> R : findOrder(orderId)
+      R --> GC : o
+      GC -> CH : prepare(o)
+      CH -> O : advanceOneUnit()
+      note right of O : last unit done ->\nstatus = READY
+    end
+  end
+
+  == Step 4: Payment, then eating ==
+  GC -> CA : processNextPayment(restaurant, turn)
+  opt a READY_TO_PAY customer with readyToPayTurn < turn\n(earliest readyToPayTurn, then lowest id)
+    CA -> C : markPaid(turn)
+    CA -> R : findOrder(id)
+    R --> CA : o
+    CA -> O : markPaid()
+    CA -> R : findTableOf(c)
+    R --> CA : t
+    CA -> T : release()
+    CA -> GS : recordPayment(billCents, paidSatisfaction)
+  end
+  CA --> GC : customer who paid, or null
+  loop for each customer
+    opt status == SERVED and servedTurn < turn
+      GC -> C : finishEating(turn)
+    end
+  end
+
+  == Step 5: Waiting and abandonment ==
+  loop for each customer
+    GC -> C : decreaseSatisfaction()
+    C -> C : getSatisfactionDecay()
+    note right of C : polymorphic:\nRegularCustomer = 8
+    C --> GC : left
+    opt left == true
+      GC -> R : customerLeft(c)
+      R -> O : cancel()
+      R -> T : release()
+      GC -> GS : recordDeparture()
+    end
+  end
+  GC -> UI : showEndOfTurn(turn, restaurant)
+end
+
+== Step 6: Result (after turn 18 only) ==
+GC -> OBJ : isMet(stats)
+OBJ -> GS : getPaidCount(), getRevenueCents(),\ngetAverageSatisfaction()
+OBJ --> GC : won
+GC -> UI : showFinalResult(won, stats, objective)
+UI -> Manager : VICTORY / DEFEAT
+@enduml
