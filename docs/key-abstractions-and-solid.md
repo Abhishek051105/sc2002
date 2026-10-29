@@ -13,7 +13,7 @@ real class or method in the Stage 1 code. Update this when Stage 2/3 land.
 | `ArrivalSchedule` | Control | Decides who arrives on which turn and creates the customer | The only place a concrete customer is created |
 | `Objective` | Control | `isMet(stats)` checks the 3 win targets | SRP: changes only if the win rule changes |
 | `GameConfig` | Constants | 18 turns, 2 tables, arrival turns, targets | |
-| `Restaurant` | Entity | Holds tables, queue, customers, orders, menu, staff, stats; lookups only | Composition (owns tables, menu, staff, stats); hands out unmodifiable lists |
+| `Restaurant` | Entity | Holds tables, queue, customers, orders, menu, staff, stats; lookups plus `customerLeft(c)` clean-up | Composition (owns tables, menu, staff, stats); hands out unmodifiable lists |
 | `Customer` *(abstract)* | Entity | Own satisfaction and status, state transitions, food choice, bill | Encapsulation (satisfaction has no setter); OCP hook for VIP/Critic |
 | `RegularCustomer` | Entity | Satisfaction decay of 8 per turn | Inheritance for a real "is-a" |
 | `Menu` / `MenuItem` | Entity | Fixed menu; item = name, price in cents, prep units | |
@@ -21,7 +21,7 @@ real class or method in the Stage 1 code. Update this when Stage 2/3 land.
 | `Staff` *(abstract)* | Entity | The shared "one task per turn" rule | Template for `Waiter`, `Chef`, `Cashier` |
 | `Waiter` | Entity | `seat()`, `takeOrder()`, `serve()`: validates, then acts | Validate-then-act; throws `InvalidActionException` with a reason |
 | `Chef` | Entity | `prepare(order)`: cooks one unit | |
-| `Cashier` | Entity | `processNextPayment(...)`: oldest ready customer pays | |
+| `Cashier` | Entity | `processNextPayment(restaurant, turn)`: oldest ready customer pays | Asks `Restaurant` for the order/table instead of searching lists itself (low coupling) |
 | `Table` | Entity | Free/occupied, `assign()`, `release()` | |
 | `GameStats` | Entity | Revenue (cents), satisfaction at payment, served count, departures, average | SRP: changes only if scoring changes |
 | `InvalidActionException` | Exception | Carries the reason a manager choice was rejected | Custom checked exception |
@@ -44,8 +44,11 @@ loop.
 
 **Liskov Substitution.** The state machine (`seat()` -> `orderTaken()` ->
 `serve()` -> `finishEating()` -> `markPaid()`) and the 0..100 clamp live in
-`Customer`, and subclasses do not override them. Any subclass can therefore be
-used wherever a `Customer` is expected without the controller knowing.
+`Customer`, and those methods are `final`, so subclasses cannot override them.
+Any subclass can therefore be used wherever a `Customer` is expected without
+the controller knowing. Subclasses may only change the decay, food choice and
+bill, and must keep the same contract (e.g. `calculateBill` never returns a
+negative amount, `chooseMenuItem` returns an item from the menu).
 
 **Interface Segregation** (modest claim). There is no single staff contract
 with `seat()`, `prepare()` and `processNextPayment()`. `Staff` holds only the
@@ -58,6 +61,13 @@ depend on the abstract `Customer`, never `RegularCustomer`; only
 `ArrivalSchedule` names a concrete customer class. We do not claim more:
 the controller still uses the concrete `ConsoleUI` and staff classes, and we
 have not added interfaces where there is only one implementation.
+
+**Dependency Injection (not a SOLID principle, but used).** `Main` creates the
+`Restaurant`, `ConsoleUI`, `ArrivalSchedule` and `Objective` and passes them into
+the `GameController` constructor; the controller never calls `new` on them.
+As the Chapter 9 slides point out, this is DI but not DIP, because the
+injected types are concrete. A genuine DIP case is expected in Stage 3
+(a pricing policy for Happy Hour).
 
 ## Encapsulation examples (for the class-diagram notes)
 
