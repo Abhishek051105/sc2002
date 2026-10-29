@@ -77,7 +77,7 @@ public class ConsoleUI {
         System.out.println("Staff Available:");
         System.out.println("  Waiter : " + (restaurant.getWaiter().hasActedThisTurn() ? "Acted" : "Ready"));
         System.out.println("  Chef   : " + (restaurant.getChef().hasActedThisTurn() ? "Acted" : "Ready"));
-        System.out.println("  Cashier: Ready ");
+        System.out.println("  Cashier: " + (restaurant.getCashier().hasActedThisTurn() ? "Acted" : "Ready"));
         System.out.println("----------------------------------------");
     }
     
