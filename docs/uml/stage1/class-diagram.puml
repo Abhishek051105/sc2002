@@ -73,7 +73,6 @@ package "control" {
     + {static} TARGET_PAID : int = 4
     + {static} TARGET_REVENUE_CENTS : int = 4500
     + {static} TARGET_AVG_SATISFACTION : int = 60
-    - GameConfig()
   }
 }
 
@@ -237,7 +236,7 @@ package "entity" {
     + getPaidCount() : int
     + getServedCount() : int
     + getUnhappyDepartures() : int
-    + getAverageSatisfaction() : OptionalDouble
+    + getAverageSatisfaction() : double
   }
 
   enum WaiterTask <<enumeration>> {
@@ -252,7 +251,6 @@ package "entity" {
   }
 
   class Money <<utility>> {
-    - Money()
     + {static} format(cents : int) : String
   }
 }
