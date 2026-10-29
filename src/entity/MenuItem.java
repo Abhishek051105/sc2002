@@ -10,11 +10,11 @@ public class MenuItem {
             throw new IllegalArgumentException("Name cannot be empty");
         }
 
-        if (priceCents <0 ){
-            throw new IllegalArgumentException("Price cannot be below 0");
+        if (priceCents <= 0 ){
+            throw new IllegalArgumentException("Price must be greater than 0");
         }
 
-        if (prepUnits <0 ){
+        if (prepUnits < 1 ){
             throw new IllegalArgumentException("Prep units must be greater than 0");
         }
         this.priceCents = priceCents;
