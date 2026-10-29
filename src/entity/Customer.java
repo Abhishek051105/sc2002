@@ -34,10 +34,6 @@ public abstract class Customer {
         return customerId;
     }
 
-    public int getArrivalTurn() {
-        return arrivalTurn;
-    }
-
     public int getSatisfaction() {
         return satisfaction;
     }
