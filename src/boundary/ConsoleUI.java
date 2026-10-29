@@ -202,7 +202,8 @@ public class ConsoleUI {
                 if (!scanner.hasNextLine()) {
                     throw new NoSuchElementException("No input remaining in input stream");
                 }
-                String line = scanner.nextLine().trim();
+                // Windows PowerShell adds a byte-order mark when piping a file in
+                String line = scanner.nextLine().replace("﻿", "").trim();
                 if (line.isEmpty()) {
                     continue;
                 }
