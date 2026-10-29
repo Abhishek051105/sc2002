@@ -1,7 +1,5 @@
 package entity;
 
-import java.util.List;
-
 public class Cashier extends Staff {
     public Cashier() {
         super("Cashier");
@@ -9,18 +7,17 @@ public class Cashier extends Staff {
 
     /**
      * Oldest READY_TO_PAY customer that can pay this turn (ties -> lower id).
-     * Calls c.markPaid(turn), marks the order paid, releases the table,
-     * records bill + c.getPaidSatisfaction() in stats. Returns who paid, or null.
+     * Marks the customer and their order paid, frees their table and
+     * records the bill + satisfaction in stats. Returns who paid, or null.
      */
-    public Customer processNextPayment(List<Customer> customers, List<Order> orders,
-                                       List<Table> tables, int turn, GameStats stats) {
+    public Customer processNextPayment(Restaurant restaurant, int turn) {
         if (hasActedThisTurn()) {
             return null;
         }
 
         // pick the earliest readyToPayTurn, then the lowest id
         Customer next = null;
-        for (Customer c : customers) {
+        for (Customer c : restaurant.getAllCustomers()) {
             if (!c.isReadyToPay() || c.getReadyToPayTurn() >= turn) {
                 continue;
             }
@@ -37,20 +34,16 @@ public class Cashier extends Staff {
 
         next.markPaid(turn);
 
-        int billCents = 0;
-        for (Order o : orders) {
-            if (o.getCustomer() == next) {
-                o.markPaid();
-                billCents = o.getBillCents();
-            }
-        }
-        for (Table t : tables) {
-            if (t.getOccupant() == next) {
-                t.release();
-            }
+        // order id == customer id, so the restaurant can look it up for us
+        Order order = restaurant.findOrder(next.getCustomerId());
+        order.markPaid();
+
+        Table table = restaurant.findTableOf(next);
+        if (table != null) {
+            table.release();
         }
 
-        stats.recordPayment(billCents, next.getPaidSatisfaction());
+        restaurant.getStats().recordPayment(order.getBillCents(), next.getPaidSatisfaction());
         markActed();
         return next;
     }

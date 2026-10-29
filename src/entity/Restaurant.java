@@ -41,6 +41,25 @@ public class Restaurant {
         waitingQueue.remove(c);
     }
 
+    /**
+     * Clean-up when a customer gets fed up and leaves:
+     * take them out of the queue, cancel their order and free their table.
+     * A leaving customer was never served, so cancel() is always allowed.
+     */
+    public void customerLeft(Customer c) {
+        removeFromQueue(c);
+
+        Order o = findOrder(c.getCustomerId());
+        if (o != null) {
+            o.cancel();
+        }
+
+        Table t = findTableOf(c);
+        if (t != null) {
+            t.release();
+        }
+    }
+
     public List<Customer> getWaitingQueue() {
         return Collections.unmodifiableList(waitingQueue);
     }
