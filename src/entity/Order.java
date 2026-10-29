@@ -2,10 +2,10 @@ package entity;
 
 
 public class Order {
-    private int orderId;
-    private Customer customer;
-    private MenuItem item;
-    private int billCents;
+    private final int orderId;
+    private final Customer customer;
+    private final MenuItem item;
+    private final int billCents;
     private int unitsDone;
     private OrderStatus status;
  

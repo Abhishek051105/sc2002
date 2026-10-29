@@ -1,9 +1,9 @@
 package entity;
 
 public class MenuItem {
-    private int priceCents;
-    private String name;
-    private int prepUnits;
+    private final int priceCents;
+    private final String name;
+    private final int prepUnits;
 
     public MenuItem( String name,int priceCents, int prepUnits){
         if (name == null || name.isEmpty()){
