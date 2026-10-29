@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * Holds the game state: tables, queue, customers, orders, menu, staff and
- * stats.
+ * stats. Also does the clean-up when a customer leaves (customerLeft).
  */
 public class Restaurant {
     private final List<Table> tables = new ArrayList<>();
