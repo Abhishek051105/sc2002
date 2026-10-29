@@ -5,8 +5,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Holds the game state. Lookups only, no game rules, so it doesn't
- * become a God class. Owns tables/menu/staff/stats (composition).
+ * Holds the game state: lookups plus the clean-up when a customer leaves
+ * (customerLeft). No turn rules, so it does not become a God class.
+ * Owns tables/menu/staff/stats (composition).
  */
 public class Restaurant {
     private final List<Table> tables = new ArrayList<>();
