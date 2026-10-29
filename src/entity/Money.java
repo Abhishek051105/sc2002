@@ -1,7 +1,7 @@
 package entity;
 
 public final class Money { // bc we dont want anything to extend 
-    public Money(){}
+    private Money() { }   // utility class: only static methods
 
     public static String format(int cents){
         int dollar = cents / 100;
