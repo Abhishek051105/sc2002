@@ -17,9 +17,11 @@ import java.util.Scanner;
 /** Input and output only. Never decides whether an action is allowed. */
 public class ConsoleUI {
     private final Scanner scanner;
+    private final int maxTurns;
 
-    public ConsoleUI(Scanner scanner) {
+    public ConsoleUI(Scanner scanner, int maxTurns) {
         this.scanner = scanner;
+        this.maxTurns = maxTurns;
     }
 
     /** Turn, revenue, avg (or N/A), queue, tables, which staff can still act. */
@@ -28,15 +30,14 @@ public class ConsoleUI {
 
         System.out.println("");
         System.out.println("========================================");
-        System.out.println("                TURN " + turn + " / 18");
+        System.out.println("                TURN " + turn + " / " + maxTurns);
         System.out.println("========================================");
 
         // Revenue & Satisfaction
-        String revenue_str = Money.format(stats.getRevenueCents());
-        OptionalDouble avg_sat = stats.getAverageSatisfaction();
-        String avg_sat_str = avg_sat.isPresent() ? String.format("%.1f", avg_sat.getAsDouble()) : "N/A";
+        String revenueText = Money.format(stats.getRevenueCents());
+        String avgText = averageText(stats);
 
-        System.out.println("Revenue: " + revenue_str + " | Average Satisfaction (Customer has paid): " + avg_sat_str);
+        System.out.println("Revenue: " + revenueText + " | Average Satisfaction (Customer has paid): " + avgText);
         System.out.println("----------------------------------------");
 
         // Waiting Queue
@@ -83,57 +84,45 @@ public class ConsoleUI {
     /** Served, departures, revenue, avg, turns used. */
     public void showEndOfTurn(int turn, Restaurant r) {
         GameStats stats = r.getStats();
-        String revenue_str = Money.format(stats.getRevenueCents());
-        OptionalDouble avg_sat = stats.getAverageSatisfaction();
-        String avg_sat_str = avg_sat.isPresent() ? String.format("%.1f", avg_sat.getAsDouble()) : "N/A";
 
         System.out.println("");
         System.out.println("--- End of Turn " + turn + " Summary ---");
+        System.out.println("Turns Used       : " + turn + " / " + maxTurns);
         System.out.println("Served Count     : " + stats.getServedCount());
         System.out.println("Departures (Lost): " + stats.getUnhappyDepartures());
-        System.out.println("Total Revenue    : " + revenue_str);
-        System.out.println("Avg Satisfaction : " + avg_sat_str);
+        System.out.println("Total Revenue    : " + Money.format(stats.getRevenueCents()));
+        System.out.println("Avg Satisfaction : " + averageText(stats));
         System.out.println("--------------------------------");
     }
 
-    /** VICTORY/DEFEAT plus which targets passed or failed. */
+    /**
+     * VICTORY/DEFEAT plus which targets passed or failed.
+     * The pass/fail decisions come from Objective, so the win rule
+     * only lives in one place.
+     */
     public void showFinalResult(boolean won, GameStats stats, Objective objective) {
         System.out.println("");
-        System.out.println("****************************************");
+        System.out.println("========================================");
         if (won) {
-            System.out.println("╔════════════════════════════════════════╗");
-            System.out.println("║                VICTORY                 ║");
-            System.out.println("╚════════════════════════════════════════╝");
+            System.out.println("                VICTORY");
         } else {
-            System.out.println("╔════════════════════════════════════════╗");
-            System.out.println("║                DEFEAT                  ║");
-            System.out.println("╚════════════════════════════════════════╝");
+            System.out.println("                DEFEAT");
         }
-        System.out.println("****************************************");
+        System.out.println("========================================");
 
-        int paid_count = stats.getPaidCount();
-        int revenue_cents = stats.getRevenueCents();
-        OptionalDouble avg_sat = stats.getAverageSatisfaction();
+        System.out.println("1. Paid Customers >= " + objective.getMinPaidCustomers()
+                + " : " + stats.getPaidCount()
+                + " (" + passOrFail(objective.paidTargetMet(stats)) + ")");
 
-        // Target 1: Paid customers >= 4
-        boolean paid_passed = paid_count >= 4;
-        System.out.println("1. Paid Customers >= 4 : " + paid_count + " (" + (paid_passed ? "PASS" : "FAIL") + ")");
+        System.out.println("2. Revenue >= " + Money.format(objective.getMinRevenueCents())
+                + " : " + Money.format(stats.getRevenueCents())
+                + " (" + passOrFail(objective.revenueTargetMet(stats)) + ")");
 
-        // Target 2: Revenue >= $45.00 (4500 cents)
-        boolean revenue_passed = revenue_cents >= 4500;
-        System.out.println("2. Revenue >= $45.00   : " + Money.format(revenue_cents) + " (" + (revenue_passed ? "PASS" : "FAIL") + ")");
+        System.out.println("3. Avg Satisfaction >= " + objective.getMinAvgSatisfaction()
+                + " : " + averageText(stats)
+                + " (" + passOrFail(objective.satisfactionTargetMet(stats)) + ")");
 
-        // Target 3: Average satisfaction of paid customers >= 60.0
-        if (avg_sat.isPresent()) {
-            double sat_val = avg_sat.getAsDouble();
-            boolean sat_passed = sat_val >= 60.0;
-            System.out.println("3. Avg Satisfaction >= 60 : " + String.format("%.1f", sat_val) 
-                    + " (" + (sat_passed ? "PASS" : "FAIL") + ")");
-        } else {
-            System.out.println("3. Avg Satisfaction >= 60 : N/A (FAIL - No customers paid)");
-        }
-
-        System.out.println("****************************************");
+        System.out.println("========================================");
     }
 
     public WaiterTask askWaiterTask() {
@@ -165,7 +154,7 @@ public class ConsoleUI {
     }
 
     public int askTableNo(int numTables) {
-        System.out.print("Enter Table Number (1 or 2): ");
+        System.out.print("Enter Table Number (1-" + numTables + "): ");
         return readInt(1, numTables);
     }
 
@@ -187,7 +176,26 @@ public class ConsoleUI {
         System.out.println(message);
     }
 
-    /** Re-prompts on junk/blank/out of range. Exits cleanly when piped input ends. */
+    /** "79.2", or "N/A" if nobody has paid yet. */
+    private String averageText(GameStats stats) {
+        OptionalDouble avg = stats.getAverageSatisfaction();
+        if (avg.isPresent()) {
+            return String.format("%.1f", avg.getAsDouble());
+        }
+        return "N/A";
+    }
+
+    private String passOrFail(boolean passed) {
+        if (passed) {
+            return "PASS";
+        }
+        return "FAIL";
+    }
+
+    /**
+     * Re-prompts on junk/blank/out of range.
+     * Throws NoSuchElementException if the input runs out (Main catches it).
+     */
     private int readInt(int min, int max) {
         while (true) {
             try {
