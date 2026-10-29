@@ -220,14 +220,6 @@ public abstract class Customer {
     // Helper Methods
     // =========================
 
-    public boolean hasLeft() {
-        return status == CustomerStatus.LEFT;
-    }
-
-    public boolean hasPaid() {
-        return status == CustomerStatus.PAID;
-    }
-
     public boolean isReadyToPay() {
         return status == CustomerStatus.READY_TO_PAY;
     }

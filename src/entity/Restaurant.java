@@ -24,7 +24,7 @@ public class Restaurant {
         for(int i =0; i<numTables;i++){
             tables.add(new Table(i+1));
         }
-        menu = Menu.createDefault();
+        menu = new Menu();
         waiter = new Waiter();
         chef = new Chef();
         cashier = new Cashier();
@@ -72,12 +72,6 @@ public class Restaurant {
         return Collections.unmodifiableList(tables);
     }
 
-    public List<Order> getActiveOrders() {
-        return allOrders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.IN_PREPARATION
-                          || o.getStatus() == OrderStatus.READY)
-                .toList();
-    }
     public List<Staff> getAllStaff() { 
         return List.of(waiter,chef,cashier);
     }
@@ -111,11 +105,6 @@ public class Restaurant {
                 .findFirst()
                 .orElse(null);
     }
-    /** Every order ever placed (for the cashier and for departures). */
-    public List<Order> getAllOrders() { 
-        return Collections.unmodifiableList(allOrders);
-    }
- 
     public void addOrder(Order o) { 
         allOrders.add(o);
     }

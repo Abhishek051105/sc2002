@@ -21,10 +21,6 @@ public abstract class Staff {
         return actedThisTurn;
     }
 
-    public String getRoleName() {
-        return roleName;
-    }
-
     /** Throws "Waiter has already acted this turn" etc. */
     protected void checkCanAct() throws InvalidActionException {
         if (actedThisTurn) {
