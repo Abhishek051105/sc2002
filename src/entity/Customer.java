@@ -111,7 +111,7 @@ public abstract class Customer {
      *
      * @return true if the customer leaves.
      */
-    public boolean decreaseSatisfaction() {
+    public final boolean decreaseSatisfaction() {
 
         if (status == CustomerStatus.WAITING
                 || status == CustomerStatus.SEATED
@@ -130,7 +130,10 @@ public abstract class Customer {
         return false;
     }
 
-    public void seat() {
+    // These are final so a subclass (VIP, Critic, ...) can't change the
+    // order of the steps. Subclasses only change decay, food choice and bill.
+
+    public final void seat() {
 
         if (status != CustomerStatus.WAITING) {
             throw new IllegalStateException(
@@ -140,7 +143,7 @@ public abstract class Customer {
         status = CustomerStatus.SEATED;
     }
 
-    public void orderTaken() {
+    public final void orderTaken() {
 
         if (status != CustomerStatus.SEATED) {
             throw new IllegalStateException(
@@ -150,7 +153,7 @@ public abstract class Customer {
         status = CustomerStatus.WAITING_FOR_FOOD;
     }
 
-    public void serve(int turn) {
+    public final void serve(int turn) {
 
         if (status != CustomerStatus.WAITING_FOR_FOOD) {
             throw new IllegalStateException(
@@ -166,7 +169,7 @@ public abstract class Customer {
         servedTurn = turn;
     }
 
-    public void finishEating(int turn) {
+    public final void finishEating(int turn) {
 
         if (status != CustomerStatus.SERVED) {
             throw new IllegalStateException(
@@ -182,7 +185,7 @@ public abstract class Customer {
         readyToPayTurn = turn;
     }
 
-    public void markPaid(int turn) {
+    public final void markPaid(int turn) {
 
         if (status != CustomerStatus.READY_TO_PAY) {
             throw new IllegalStateException(
