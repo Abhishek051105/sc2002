@@ -6,7 +6,6 @@ import entity.CustomerStatus;
 import entity.GameStats;
 import entity.InvalidActionException;
 import entity.Order;
-import entity.OrderStatus;
 import entity.Restaurant;
 import entity.Staff;
 import entity.Table;
@@ -133,9 +132,7 @@ public class GameController {
 
     /** Step 4: cashier first, then SERVED customers with servedTurn < turn -> finishEating(turn) */
     private void handleEatingAndPayment() {
-        Customer paid = restaurant.getCashier().processNextPayment(
-                restaurant.getAllCustomers(), restaurant.getAllOrders(),
-                restaurant.getTables(), currentTurn, restaurant.getStats());
+        Customer paid = restaurant.getCashier().processNextPayment(restaurant, currentTurn);
         if (paid != null) {
             ui.showMessage("C" + paid.getCustomerId() + " paid.");
         }
@@ -151,27 +148,14 @@ public class GameController {
 
     /**
      * Step 5: c.decreaseSatisfaction() for everyone (iterate over a COPY).
-     * If it returns true: remove from queue, cancel unserved order, release table,
-     * stats.recordDeparture().
+     * If it returns true, the restaurant does the clean-up and we count a departure.
      */
     private void handleEndOfTurnWaiting() {
         List<Customer> everyone = new ArrayList<>(restaurant.getAllCustomers());
         for (Customer c : everyone) {
             boolean left = c.decreaseSatisfaction();
             if (left) {
-                restaurant.removeFromQueue(c);
-
-                Order o = restaurant.findOrder(c.getCustomerId());
-                if (o != null && (o.getStatus() == OrderStatus.IN_PREPARATION
-                        || o.getStatus() == OrderStatus.READY)) {
-                    o.cancel();
-                }
-
-                Table t = restaurant.findTableOf(c);
-                if (t != null) {
-                    t.release();
-                }
-
+                restaurant.customerLeft(c);
                 restaurant.getStats().recordDeparture();
                 ui.showMessage("C" + c.getCustomerId() + " got fed up and left!");
             }
