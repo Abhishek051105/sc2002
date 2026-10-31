@@ -9,4 +9,9 @@ public class RegularCustomer extends Customer {
     public int getSatisfactionDecay() {
         return 8;
     }
+
+    @Override
+public String getTypeLabel() {
+    return "Regular";
+}
 }
