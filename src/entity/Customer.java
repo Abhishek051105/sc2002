@@ -81,8 +81,7 @@ public abstract class Customer {
     }
 
     /**
-     * Stage 1 customers pay full price.
-     * VIPCustomer will override this in Stage 2.
+     * Full price by default. VIPCustomer overrides this with its discount.
      */
     public int calculateBill(int basePriceCents) {
 
