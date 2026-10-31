@@ -119,6 +119,7 @@ public abstract class Customer {
      *
      * @return true if the customer leaves.
      */
+    public abstract String getTypeLabel();
     public final boolean decreaseSatisfaction() {
 
         if (status == CustomerStatus.WAITING
