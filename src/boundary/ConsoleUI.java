@@ -24,6 +24,10 @@ public class ConsoleUI {
         this.maxTurns = maxTurns;
     }
 
+    public ConsoleUI(Scanner scanner) {
+    this(scanner, 18);
+    }
+
     /** Turn, revenue, avg (or N/A), queue, tables, which staff can still act. */
     public void showStartOfTurn(int turn, Restaurant restaurant) {
         GameStats stats = restaurant.getStats();
@@ -49,6 +53,7 @@ public class ConsoleUI {
             StringBuilder sb = new StringBuilder();
             for (Customer c : queue) {
                 sb.append("[C").append(c.getCustomerId())
+                  .append(" ").append(c.getTypeLabel())
                   .append(" (Sat: ").append(c.getSatisfaction()).append(")] ");
             }
             System.out.println(sb.toString().trim());
@@ -64,10 +69,12 @@ public class ConsoleUI {
                 String orderInfo = "No Order";
                 Order o = restaurant.findOrder(c.getCustomerId());
                 if (o != null) {
-                    orderInfo = o.getItem().getName() + " (" + o.getStatus() + ", " 
+                    orderInfo = o.getItem().getName() + " " + Money.format(o.getBillCents())
+                              + " (" + o.getStatus() + ", " 
                               + o.getUnitsDone() + "/" + o.getItem().getPrepUnits() + " units)";
                 }
                 System.out.println("  Table " + t.getTableNo() + ": Seated C" + c.getCustomerId() 
+                        + " " + c.getTypeLabel()
                         + " (Sat: " + c.getSatisfaction() + ", Status: " + c.getStatus() 
                         + ") | Order: " + orderInfo);
             }
