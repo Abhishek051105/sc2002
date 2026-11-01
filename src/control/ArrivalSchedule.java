@@ -2,27 +2,46 @@ package control;
 
 import entity.Customer;
 import entity.RegularCustomer;
+import entity.VIPCustomer;
+import entity.CriticCustomer;
+import entity.CustomerType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 
 public class ArrivalSchedule {
-    private final Set<Integer> arrivalTurns;
+    private final List<Integer> arrivalTurns;
+    private final List<CustomerType> arrivalTypes;
     private int nextCustomerId = 1;
 
-    public ArrivalSchedule(Set<Integer> arrivalTurns) {
+   
+    public ArrivalSchedule(List<Integer> arrivalTurns, List<CustomerType> arrivalTypes) {
         this.arrivalTurns = arrivalTurns;
+        this.arrivalTypes = arrivalTypes;
     }
 
-    /** Empty list if nobody arrives this turn. Creates new RegularCustomer(id, turn). */
-    public List<Customer> customersArrivingAt(int turn) { 
+    
+    public List<Customer> customersArrivingAt(int turn) {
         List<Customer> list = new ArrayList<>();
-        if(arrivalTurns.contains(turn)){
-            list.add(new RegularCustomer(nextCustomerId,turn));
-            nextCustomerId++;
+        for (int i = 0; i < arrivalTurns.size(); i++) {
+            if (arrivalTurns.get(i) == turn) {
+                list.add(createCustomer(arrivalTypes.get(i), nextCustomerId, turn));
+                nextCustomerId++;
+            }
         }
         return list;
+    }
+
+  
+    private Customer createCustomer(CustomerType type, int id, int turn) {
+        switch (type) {
+            case VIP:
+                return new VIPCustomer(id, turn);
+            case CRITIC:
+                return new CriticCustomer(id, turn);
+            default:
+                return new RegularCustomer(id, turn);
+        }
     }
 }
