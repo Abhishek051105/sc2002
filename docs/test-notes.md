@@ -1,4 +1,4 @@
-# Stage 1 Test Notes
+# Test Notes
 
 Every run below is reproducible: the input script in `tests/` is piped into the game, so the
 same input always gives the same output. See the README for the build and run commands.
@@ -113,57 +113,70 @@ ends with exactly the victory numbers.
 
 ## Stage 2 Test Runs
 
-### 1. Stage 2 Victory Run (`tests/stage2_victory.txt`)
-* **Objective:** Achieve VICTORY meeting all targets ($\ge 4$ paid customers, $\ge \$45.00$ revenue, $\ge 60$ average satisfaction).
-* **Final Result:** 5 paid, $73.50 revenue, 75.6 average satisfaction (VICTORY).
+Stage 2 runs use the default command (`java -cp out control.Main`). C2 is the VIP (arrives turn
+4, loses 5 per turn, 10% off) and C4 is the Critic (arrives turn 10, loses 12 per turn, always
+orders the most expensive dish, Pasta). The rest are Regular. The Stage 1 scripts above still give
+their old results when run with `control.Main regular`.
 
-| Turn | Arrivals | Waiter Action | Chef Action | Table 1 | Table 2 | Queue | Notes |
-|:---:|:---|:---|:---|:---|:---|:---|:---|
-| 1 | C1 (Regular) | Seat C1 -> T1 | Wait | C1 Seated | Empty | Empty | |
-| 2 | - | Take Order C1 (Salad) | Cook Order 1 | C1 Waiting Food | Empty | Empty | Order 1 Ready |
-| 3 | - | Serve Order 1 | Wait | C1 Served (Eating) | Empty | Empty | |
-| 4 | C2 (VIP) | Seat C2 -> T2 | Wait | C1 Ready to Pay | C2 Seated | Empty | |
-| 5 | - | Take Order C2 (Burger) | Cook Order 2 (1/2) | C1 Paid -> Empty | C2 Waiting Food | Empty | C1 pays $9.00 |
-| 6 | - | Wait | Cook Order 2 (2/2) | Empty | C2 Waiting Food | Empty | Order 2 Ready |
-| 7 | C3 (Regular) | Seat C3 -> T1 | Wait | C3 Seated | C2 Waiting Food | Empty | |
-| 8 | - | Take Order C3 (Salad) | Cook Order 3 | C3 Waiting Food | C2 Waiting Food | Empty | Order 3 Ready |
-| 9 | - | Serve Order 2 | Wait | C3 Waiting Food | C2 Served (Eating) | Empty | |
-| 10 | C4 (Critic) | Serve Order 3 | Wait | C3 Served (Eating) | C2 Served (Eating) | C4 Critic | |
-| 11 | - | Seat C4 -> T2 | Wait | C3 Ready to Pay | C4 Seated | Empty | C2 paid $13.50 |
-| 12 | - | Take Order C4 (Pasta) | Cook Order 4 (1/2) | C3 Paid -> Empty | C4 Waiting Food | Empty | C3 pays $9.00 |
-| 13 | C5 (Regular) | Seat C5 -> T1 | Cook Order 4 (2/2) | C5 Seated | C4 Waiting Food | Empty | Order 4 Ready |
-| 14 | - | Take Order C5 (Burger) | Wait | C5 Waiting Food | C4 Waiting Food | Empty | |
-| 15 | - | Serve Order 4 | Cook Order 5 (1/2) | C5 Waiting Food | C4 Served (Eating) | Empty | |
-| 16 | C6 (Regular) | Seat C6 -> T2 | Cook Order 5 (2/2) | C5 Waiting Food | C6 Seated | Empty | C4 paid $27.00 |
-| 17 | - | Take Order C6 (Salad) | Cook Order 6 | C5 Waiting Food | C6 Waiting Food | Empty | Order 5 & 6 Ready |
-| 18 | - | Serve Order 5 | Wait | C5 Served | C6 Waiting Food | Empty | C5 pays $15.00 |
+| Script | Result | Paid | Revenue | Avg satisfaction |
+|---|---|---|---|---|
+| `tests/stage2_victory.txt` | VICTORY | 5 | $73.50 | 75.6 |
+| `tests/stage2_defeat.txt` | DEFEAT | 4 | $58.50 | 53.8 (fails the 60 target) |
+| `tests/stage2_invalid_inputs.txt` | VICTORY | 5 | $73.50 | 75.6 |
 
----
+### Stage 2 victory run (`tests/stage2_victory.txt`)
 
-### 2. Stage 2 Defeat Run (`tests/stage2_defeat.txt`)
-* **Objective:** Produce DEFEAT by driving satisfaction below target (< 60) while achieving required customer throughput.
-* **Final Result:** 4 paid, $58.50 revenue, 53.8 average satisfaction (DEFEAT).
+| Turn | Arrival | Waiter | Chef | What happens |
+|---|---|---|---|---|
+| 1 | C1 Regular | Seat C1 at T1 | Wait | |
+| 2 | | Take C1's order (Salad) | Cook C1 | Salad READY |
+| 3 | | Serve C1 | Wait | C1 eats (84) |
+| 4 | **C2 VIP** | Seat C2 at T2 | Wait | C1 ready to pay |
+| 5 | | Take C2's order (Burger, **$13.50**) | Cook C2 | Burger READY; C1 pays $9.00 |
+| 6 | | Serve C2 | Wait | C2 eats (90) |
+| 7 | C3 Regular | Seat C3 at T1 | Wait | C2 ready to pay |
+| 8 | | Take C3's order (Pasta) | Cook C3 (1/2) | C2 pays **$13.50** |
+| 9 | | Wait | Cook C3 (2/2) | Pasta READY |
+| 10 | **C4 Critic** | Serve C3 | Wait | C3 eats (76); C4 waits in the queue |
+| 11 | | Seat C4 at T2 | Wait | C3 ready to pay |
+| 12 | | Take C4's order (**Pasta**, Critic rule) | Cook C4 (1/2) | C3 pays $18.00 |
+| 13 | C5 Regular | Seat C5 at T1 | Cook C4 (2/2) | Pasta READY |
+| 14 | | Serve C4 | Wait | C4 eats (52) |
+| 15 | | Take C5's order (Burger) | Cook C5 | Burger READY; C4 ready to pay |
+| 16 | C6 Regular | Serve C5 | Wait | C4 pays $18.00 |
+| 17 | | Seat C6 at T2 | Wait | C5 ready to pay |
+| 18 | | Take C6's order (Pasta) | Cook C6 (1/2) | C5 pays $15.00 |
 
-| Turn | Arrivals | Waiter Action | Chef Action | Notes / State |
-|:---:|:---|:---|:---|:---|
-| 1-3 | C1 | Wait | Wait | Deliberate delays to decay customer satisfaction into the 50s |
-| 4 | - | Seat C1 -> T1 | Wait | C1 seated late with decayed satisfaction |
-| 5 | - | Take Order C1 (Salad) | Cook Order 1 | |
-| 6 | C2 (VIP) | Serve Order 1 | Wait | C1 eating |
-| 7 | - | Seat C2 -> T2 | Wait | C1 pays $9.00 (Sat: 52) |
-| 8 | - | Take Order C2 (Burger) | Cook Order 2 (1/2) | |
-| 9 | - | Wait | Cook Order 2 (2/2) | Order 2 ready |
-| 10 | C3 (Regular) | Seat C3 -> T1 | Wait | |
-| 11 | - | Take Order C3 (Salad) | Cook Order 3 | |
-| 12 | C4 (Critic) | Seat C4 -> T2 | Cook Order 3 | C2 pays $13.50 (Sat: 40) |
-| 13 | - | Serve Order 3 | Wait | C3 eating |
-| 14 | - | Take Order C4 (Pasta) | Cook Order 4 (1/2) | |
-| 15 | C5 (Regular) | Wait | Cook Order 4 (2/2) | Order 4 ready |
-| 16 | - | Serve Order 4 | Wait | C3 pays $9.00 (Sat: 60); C4 eating |
-| 17 | - | Wait | Wait | C4 finishes eating |
-| 18 | C6 (Regular) | Wait | Wait | C4 pays $27.00 (Sat: 63); Final Avg Sat: 53.8 (FAIL) |
+Paid satisfactions: 84, 90 (VIP), 76, 52 (Critic), 76, so the average is 75.6. Revenue is
+$9.00 + $13.50 + $18.00 + $18.00 + $15.00 = $73.50. All three targets pass.
 
----
+### Stage 2 defeat run (`tests/stage2_defeat.txt`)
+
+The same slow start as the Stage 1 defeat: the Waiter waits on turns 1 to 3. The delay ripples
+through every later customer, and the Critic, who loses 12 per turn, pays at only 28.
+
+| Turn | Arrival | Waiter | Chef | What happens |
+|---|---|---|---|---|
+| 1-3 | C1 Regular (turn 1) | Wait | Wait | C1 waits in the queue |
+| 4 | **C2 VIP** | Seat C1 at T1 | Wait | C2 waits in the queue |
+| 5 | | Take C1's order (Salad) | Cook C1 | Salad READY |
+| 6 | | Serve C1 | Wait | C1 eats (60) |
+| 7 | C3 Regular | Seat C2 at T2 | Wait | C1 ready to pay |
+| 8 | | Take C2's order (Burger, $13.50) | Cook C2 | Burger READY; C1 pays $9.00 |
+| 9 | | Serve C2 | Wait | C2 eats (75) |
+| 10 | **C4 Critic** | Seat C3 at T1 | Wait | C2 ready to pay |
+| 11 | | Take C3's order (Pasta) | Cook C3 (1/2) | C2 pays $13.50 |
+| 12 | | Seat C4 at T2 | Cook C3 (2/2) | Pasta READY |
+| 13 | C5 Regular | Serve C3 | Wait | C3 eats (52) |
+| 14 | | Take C4's order (Pasta) | Cook C4 (1/2) | C3 ready to pay |
+| 15 | | Wait | Cook C4 (2/2) | Pasta READY; C3 pays $18.00 |
+| 16 | C6 Regular | Serve C4 | Wait | C4 eats (28) |
+| 17 | | Wait | Wait | C4 ready to pay |
+| 18 | | Wait | Wait | C4 pays $18.00 |
+
+Paid satisfactions: 60, 75 (VIP), 52, 28 (Critic), so the average is 53.8. Paid count (4) and
+revenue ($58.50) pass, but average satisfaction misses 60, so it's a DEFEAT. In Stage 1 the same
+slow start gave 58.0; the Critic is what pulls it down to 53.8.
 
 ### 3. Stage 2 Invalid Inputs & Boundary Check (`tests/stage2_invalid_inputs.txt`)
 Tests boundary inputs in `ConsoleUI` and domain state invariant enforcements involving specialized customer subtypes (C2 VIP):
