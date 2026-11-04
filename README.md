@@ -22,6 +22,10 @@ javac -d out (Get-ChildItem -Recurse src -Filter *.java).FullName
 java -cp out control.Main
 ```
 
+`java -cp out control.Main` plays the Stage 2 setting (Regular, VIP and Critic customers).
+`java -cp out control.Main regular` plays the Stage 1 setting (six Regular customers) on the
+same build.
+
 ## Reproducible test runs
 
 Each script in `tests/` is piped in as the manager's input:
@@ -31,11 +35,20 @@ java -cp out control.Main < tests/stage1_victory.txt                  # Bash or 
 Get-Content tests\stage1_victory.txt | java -cp out control.Main      # PowerShell
 ```
 
-| Script | Expected result |
-|---|---|
-| `tests/stage1_victory.txt` | VICTORY: 5 paid, $66.00, avg 79.2 |
-| `tests/stage1_defeat.txt` | DEFEAT: 4 paid, $51.00, avg 58.0 (satisfaction target fails) |
-| `tests/stage1_invalid_inputs.txt` | The victory run with invalid input mixed in; same result as the victory run |
+The Stage 1 scripts are run with the `regular` argument:
+
+```
+java -cp out control.Main regular < tests/stage1_victory.txt
+Get-Content tests\stage1_victory.txt | java -cp out control.Main regular
+```
+
+| Script | Command | Expected result |
+|---|---|---|
+| `tests/stage2_victory.txt` | `control.Main` | VICTORY: 5 paid, $73.50, avg 75.6 |
+| `tests/stage2_defeat.txt` | `control.Main` | DEFEAT: 4 paid, $58.50, avg 53.8 (satisfaction target fails) |
+| `tests/stage1_victory.txt` | `control.Main regular` | VICTORY: 5 paid, $66.00, avg 79.2 |
+| `tests/stage1_defeat.txt` | `control.Main regular` | DEFEAT: 4 paid, $51.00, avg 58.0 (satisfaction target fails) |
+| `tests/stage1_invalid_inputs.txt` | `control.Main regular` | The victory run with invalid input mixed in; same result as the victory run |
 
 Turn-by-turn tables and the list of invalid inputs tested are in
 [docs/test-notes.md](docs/test-notes.md).
@@ -72,6 +85,23 @@ out-of-range numbers are also asked again.
 The customer arriving at turn 16 can never pay before the game ends, so at most 5 customers can
 pay. This is intended.
 
+## Rules and decisions (Stage 2)
+
+Everything in the Stage 1 table still applies. Stage 2 adds two customer types:
+
+| Customer | Loses per waiting turn | Bill | Special behaviour |
+|---|---|---|---|
+| Regular | 8 | Full price | None |
+| VIP | 5 | 10% off (`price * 90 / 100` in cents: $8.10, $13.50, $16.20) | None |
+| Critic | 12 | Full price | Always orders the most expensive dish on the menu (Pasta) |
+
+| Topic | Decision |
+|---|---|
+| Arrivals | Still 6 arrivals at turns 1, 4, 7, 10, 13, 16. Arrival 2 (turn 4) is the VIP, arrival 4 (turn 10) is the Critic, the rest are Regular |
+| Food choice | Unchanged: customer *n* orders `menu[(n-1) % 3]`, except the Critic, who overrides it with the most expensive dish (C4 orders Pasta instead of Salad) |
+| Display | The queue and table lines show each customer's type, and an order shows its bill (for example `Seated C2 VIP ... \| Order: Burger $13.50`) |
+| Bill | Worked out once, when the order is taken, and locked into the order |
+
 ## Project layout
 
 ```
@@ -89,11 +119,43 @@ Repository: https://github.com/Abhishek051105/sc2002
 | Stage | Tag | What changed | Class diagram |
 |---|---|---|---|
 | 1 | [`stage-1`](https://github.com/Abhishek051105/sc2002/tree/stage-1) | Base game with Regular customers only | [stage1/class-diagram.png](docs/uml/stage1/class-diagram.png) |
-| 2 | `stage-2` | To be added | To be added |
+| 2 | [`stage-2`](https://github.com/Abhishek051105/sc2002/tree/stage-2) | Adds VIP and Critic customers | To be added |
 | 3 | `stage-3` | To be added | To be added |
 
-Stage comparisons (new files, changed files with reasons) will be added here for
-stage-1 → stage-2 and stage-2 → stage-3.
+### stage-1 → stage-2
+
+All changes: [compare stage-1...stage-2](https://github.com/Abhishek051105/sc2002/compare/stage-1...stage-2)
+
+Stage 2 was built mostly as new files. Two new customer types were added without changing
+`GameController` or any staff class: each customer object decides its own satisfaction loss,
+bill and dish, and the rest of the game just calls those methods.
+
+**New files**
+
+| File | Responsibility |
+|---|---|
+| `entity/VIPCustomer.java` | Extends `Customer`: loses 5 per turn, `calculateBill` gives 10% off |
+| `entity/CriticCustomer.java` | Extends `Customer`: loses 12 per turn, `chooseMenuItem` picks the most expensive dish |
+| `entity/CustomerType.java` | Enum `REGULAR, VIP, CRITIC`, used only to describe the arrival list |
+| `tests/stage2_victory.txt`, `tests/stage2_defeat.txt` | Reproducible Stage 2 runs |
+
+**Changed files**
+
+| File | Change | Reason |
+|---|---|---|
+| `entity/Customer` | Added abstract `getTypeLabel()` | The UI must show "VIP" or "Critic" without `instanceof`, so each subclass names itself (polymorphism) |
+| `entity/RegularCustomer` | Added `getTypeLabel()` returning "Regular" | Required by the new abstract method |
+| `control/GameConfig` | `ARRIVAL_TURNS` is now a `List`; added `ARRIVAL_TYPES` and `ALL_REGULAR` | Which arrival is which type is configuration, not logic. A `List` keeps positions, so turn *i* and type *i* line up |
+| `control/ArrivalSchedule` | Takes the turns and types; `createCustomer()` builds the matching subclass | The one place allowed to name concrete customer classes, so adding a type changes one method |
+| `control/Main` | Optional `regular` argument uses `ALL_REGULAR` | Lets the Stage 1 scripts run on the Stage 2 build, which is our "what still works" evidence |
+| `boundary/ConsoleUI` | Shows the type label and the locked bill in the queue and table lines | So the player can see who is VIP or Critic and the discounted price |
+
+**Unchanged:** `GameController`, `Waiter`, `Chef`, `Cashier`, `Order`, `Menu`, `MenuItem`,
+`Restaurant`, `Table`, `GameStats`, `Objective`, `Staff`.
+
+**What still works:** the seat, order, serve, eat and pay flow is the same for every customer
+type, and the three Stage 1 scripts give exactly their old results when run with `regular`
+(79.2, 58.0, 79.2).
 
 ## Design documents
 
