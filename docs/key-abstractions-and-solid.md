@@ -80,8 +80,9 @@ promise less"):
 - `VIPCustomer.calculateBill()` calls `super.calculateBill()` first, so it
   rejects a negative price exactly like the parent, and then returns a
   smaller, still non-negative amount.
-- `CriticCustomer.chooseMenuItem()` still returns an item from the menu it
-  was given; it only picks a different one.
+- `CriticCustomer.chooseMenuItem()` rejects a null or empty menu with the
+  same `IllegalArgumentException` as the parent, and still returns an item
+  from the menu it was given; it only picks a different one.
 - Every subclass decay is positive, so satisfaction still only goes down
   while waiting and the clamp at 0 still applies.
 
