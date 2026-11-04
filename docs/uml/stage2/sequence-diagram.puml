@@ -1,0 +1,155 @@
+@startuml sequence-diagram
+title Restaurant Rush - Stage 2 Sequence Diagram\nUse case: Serve a VIP customer, from arrival to paying the discounted bill ($13.50)
+
+skinparam shadowing false
+autonumber
+hide footbox
+
+' Scenario: tests/stage2_victory.txt. C2 is the VIP (arrival 2, turn 4).
+' Turn 4 seat at Table 2, turn 5 order Burger + Chef cooks it, turn 6 serve,
+' turn 7 finish eating, turn 8 pay $13.50. Only the calls that involve the VIP are shown.
+
+actor Manager
+boundary ":ConsoleUI" as UI
+control ":GameController" as GC
+control ":ArrivalSchedule" as AS
+entity ":Restaurant" as R
+entity ":Waiter" as W
+entity ":Chef" as CH
+entity ":Cashier" as CA
+entity "t2:Table" as T
+entity ":Menu" as M
+entity "o:Order" as O
+entity ":GameStats" as GS
+
+== Turn 4: the VIP arrives and is seated ==
+GC -> AS : customersArrivingAt(4)
+activate AS
+AS -> AS : createCustomer(VIP, 2, 4)
+note right of AS : the only place that names a\nconcrete customer class
+create entity "vip:VIPCustomer" as V
+AS -> V : <<create>> new VIPCustomer(2, 4)
+AS --> GC : [vip]
+deactivate AS
+GC -> R : addArrival(vip)
+GC -> UI : showMessage("C2 has arrived.")
+GC -> UI : showStartOfTurn(4, restaurant)
+UI -> V : getTypeLabel()
+V --> UI : "VIP"
+note right of UI : queue shows [C2 VIP (Sat: 100)]\nwith no instanceof in the UI
+
+GC -> UI : askWaiterTask()
+UI -> Manager : prompt
+Manager --> UI : 1 (Seat)
+UI --> GC : SEAT
+GC -> UI : askCustomerId("Customer to seat: C")
+UI --> GC : 2
+GC -> GC : getCustomerOrThrow(2)
+GC -> R : findCustomer(2)
+R --> GC : vip
+GC -> UI : askTableNo(2)
+UI --> GC : 2
+GC -> R : getTable(2)
+R --> GC : t2
+GC -> W : seat(vip, t2)
+activate W
+W -> T : assign(vip)
+W -> V : seat()
+W --> GC
+deactivate W
+GC -> R : removeFromQueue(vip)
+
+GC -> V : decreaseSatisfaction()
+activate V
+V -> V : getSatisfactionDecay()
+note right of V : polymorphic: VIP = 5\n(Regular 8, Critic 12)
+V --> GC : false (100 -> 95, stays)
+deactivate V
+
+== Turn 5: order taken, bill locked at the VIP price ==
+GC -> UI : askWaiterTask()
+UI --> GC : TAKE_ORDER
+GC -> UI : askCustomerId("Take order from: C")
+UI --> GC : 2
+GC -> GC : getCustomerOrThrow(2)
+GC -> R : findCustomer(2)
+R --> GC : vip
+GC -> W : takeOrder(vip, menu)
+activate W
+W -> V : chooseMenuItem(menu)
+activate V
+note right of V : inherited Customer rule:\nmenu[(2 - 1) % 3] = Burger
+V -> M : size()
+M --> V : 3
+V -> M : getItem(1)
+M --> V : burger
+V --> W : burger
+deactivate V
+W -> V : calculateBill(1500)
+activate V
+V -> V : super.calculateBill(1500)
+note right of V : parent checks the price is\nnot negative, returns 1500
+V --> W : 1350 (1500 * 90 / 100)
+deactivate V
+create O
+W -> O : <<create>> new Order(2, vip, burger, 1350)
+W -> V : orderTaken()
+W --> GC : o
+deactivate W
+GC -> R : addOrder(o)
+GC -> UI : showMessage("C2 ordered Burger.")
+
+GC -> UI : askOrderIdOrWait()
+UI --> GC : 2
+GC -> GC : getOrderOrThrow(2)
+GC -> R : findOrder(2)
+R --> GC : o
+GC -> CH : prepare(o)
+CH -> O : advanceOneUnit()
+note right of O : 1/1 units -> READY
+GC -> V : decreaseSatisfaction()
+V --> GC : false (95 -> 90)
+
+== Turn 6: food served ==
+GC -> UI : askWaiterTask()
+UI --> GC : SERVE
+GC -> UI : askCustomerId("Serve order of: C")
+UI --> GC : 2
+GC -> GC : getOrderOrThrow(2)
+GC -> R : findOrder(2)
+R --> GC : o
+GC -> W : serve(o, 6)
+activate W
+W -> O : markServed()
+W -> V : serve(6)
+W --> GC
+deactivate W
+GC -> GS : recordServed()
+
+== Turn 7: the VIP finishes eating ==
+GC -> V : finishEating(7)
+note right of V : servedTurn 6 < 7 -> READY_TO_PAY\n(readyToPayTurn = 7)
+
+== Turn 8: the Cashier takes the discounted payment ==
+GC -> CA : processNextPayment(restaurant, 8)
+activate CA
+CA -> R : getAllCustomers()
+R --> CA : customers
+note right of CA : vip is READY_TO_PAY and\nreadyToPayTurn 7 < 8
+CA -> V : markPaid(8)
+CA -> R : findOrder(2)
+R --> CA : o
+CA -> O : markPaid()
+CA -> R : findTableOf(vip)
+R --> CA : t2
+CA -> T : release()
+CA -> O : getBillCents()
+O --> CA : 1350
+CA -> V : getPaidSatisfaction()
+V --> CA : 90
+CA -> GS : recordPayment(1350, 90)
+CA --> GC : vip
+deactivate CA
+GC -> UI : showMessage("C2 paid.")
+UI -> Manager : Revenue: $22.50 (C1 $9.00 + C2 $13.50)
+@enduml
