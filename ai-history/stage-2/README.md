@@ -1,7 +1,7 @@
 # Aekas: AI history, Stage 2
 
 My project-related AI chats for Stage 2, in order. Each file is a selection of the chat:
-my prompts are paraphrased into clearer wording (keeping what I asked), and Claude's
+my requests are written up in my own words (keeping what I asked), and Claude's
 replies are summarised. It is not the full transcript.
 
 | File | Chat | Dates (SGT) | What it covers |

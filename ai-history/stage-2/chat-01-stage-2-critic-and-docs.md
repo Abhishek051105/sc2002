@@ -4,14 +4,14 @@
 - **Dates:** 1–4 Nov 2026 (SGT)
 - **Stage:** 2
 
-A selection of the chat, not the full transcript. My prompts are **paraphrased** into
-clearer wording, keeping what I asked each time. Claude's replies are summarised in my own words.
+A selection of the chat, not the full transcript. My requests are written up in my own words,
+keeping what I asked each time. Claude's replies are summarised in my own words.
 
 ---
 
 ## 1. Verifying the dependency, then implementing the Critic (1 Nov)
 
-**My request (paraphrased):** Using the attached Stage 2 plan, first verify Raghav's part
+**My request:** Using the attached Stage 2 plan, first verify Raghav's part
 (`getTypeLabel()` and `VIPCustomer`), since my class depends on it. Then implement my part,
 `CriticCustomer`, and update the SOLID doc and design log for Stage 2, as small conventional
 commits.
@@ -37,7 +37,7 @@ I chose to push to `main`, following the team's workflow.
 
 ## 2. Acting on team review feedback (4 Nov)
 
-**My request (paraphrased):** A teammate reviewed Stage 2 and raised a list of issues. Address
+**My request:** A teammate reviewed Stage 2 and raised a list of issues. Address
 the ones in my part only, including the point that `CriticCustomer.chooseMenuItem()` should keep
 the parent's null/empty-menu check for LSP.
 

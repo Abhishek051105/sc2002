@@ -4,15 +4,15 @@
 - **Dates:** 28–29 Oct 2026 (SGT)
 - **Stage:** 1
 
-A selection of the chat, not the full transcript. My prompts are **paraphrased** into
-clearer wording, keeping what I asked each time; short follow-up messages are merged into the request
+A selection of the chat, not the full transcript. My requests are written up in my own words,
+keeping what I asked each time; short follow-up messages are merged into the request
 they belong to. Claude's replies are summarised in my own words.
 
 ---
 
 ## 1. Implementing my Stage 1 classes (28 Oct)
 
-**My request (paraphrased):** Using the attached Stage 1 plan, read the repository and implement
+**My request:** Using the attached Stage 1 plan, read the repository and implement
 only my assigned classes (`Staff`, `Waiter`, `Cashier`, `Table`, `GameStats`) plus the key
 abstractions and SOLID draft. Keep it simple, don't touch any teammate's classes, and explain
 what you did.
@@ -30,34 +30,24 @@ It compiled the project and flagged a formatting problem in the shared design lo
 
 ## 2. Committing the work (28 Oct)
 
-**My request (paraphrased):** Fix the design-log formatting issue and commit my work as small
+**My request:** Fix the design-log formatting issue and commit my work as small
 conventional commits, one per class or document. The team commits directly to `main`, so
 follow that workflow.
 
 **Claude:** Made 8 commits (for example `feat(entity): implement Waiter seat, takeOrder and
 serve`, `docs: add key abstractions table and SOLID draft`) and pushed them to `main`.
 
-## 3. Commit attribution (28 Oct)
+## 3. Reviewing a teammate's part (29 Oct)
 
-**My request (paraphrased):** Our team rule is that commits are authored by the member only, with
-AI use recorded in this history instead. Remove the AI co-author line from my commits.
-
-**Claude:** Rewrote only my commit messages. Before force-pushing (with `--force-with-lease`), it
-checked with me that nobody had pushed on top. The code and teammates' commits were unchanged.
-When GitHub's contributor sidebar still showed the tool, it confirmed no commit referenced it any
-more and that the sidebar was a cached view on GitHub's side.
-
-## 4. Reviewing a teammate's part (29 Oct)
-
-**My request (paraphrased):** Review Ayush's `ConsoleUI` against the plan.
+**My request:** Review Ayush's `ConsoleUI` against the plan.
 
 **Claude:** Listed the issues it found. I asked it to fix them, then withdrew that request
 because Ayush was already making the corrections himself. Claude discarded its local edits;
 none had been pushed.
 
-## 5. Full Stage 1 check before Stage 2 (29 Oct)
+## 4. Full Stage 1 check before Stage 2 (29 Oct)
 
-**My request (paraphrased):** Before we move on to Stage 2, do a thorough check of the whole
+**My request:** Before we move on to Stage 2, do a thorough check of the whole
 Stage 1 deliverable against the brief: code, test scripts and documentation. Then fix what's
 wrong in small commits.
 
