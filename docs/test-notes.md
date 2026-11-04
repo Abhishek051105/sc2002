@@ -178,10 +178,24 @@ Paid satisfactions: 60, 75 (VIP), 52, 28 (Critic), so the average is 53.8. Paid 
 revenue ($58.50) pass, but average satisfaction misses 60, so it's a DEFEAT. In Stage 1 the same
 slow start gave 58.0; the Critic is what pulls it down to 53.8.
 
-### 3. Stage 2 Invalid Inputs & Boundary Check (`tests/stage2_invalid_inputs.txt`)
-Tests boundary inputs in `ConsoleUI` and domain state invariant enforcements involving specialized customer subtypes (C2 VIP):
+### Stage 2 invalid inputs (`tests/stage2_invalid_inputs.txt`)
 
-* **Domain State Invariant Check:** At Turn 4, waiter attempts to take an order for C2 (VIP) while they are still in the waiting queue (`2 2`). Domain correctly rejects the action: `>> [Action Rejected]: Customer 2 cannot order, they are WAITING`.
-* **UI Range Validation:** Waiter selects action `1` to seat C2, then enters invalid table `99`. `ConsoleUI` traps the value and prompts: `Please enter a number between 1 and 2`.
-* **Recovery & Completion:** Valid table `2` is supplied, C2 is seated, and the simulation completes all 18 turns cleanly.
-* **Subtype Patience Verification:** When unserviced in the queue, C4 (Critic) decays at double rate (-12/turn) and abandons the queue at Turn 18 (`C4 got fed up and left!`), verifying specialized customer degradation behavior under idle/invalid conditions.
+Replays the Stage 2 victory run with 11 invalid inputs mixed in, aimed at the two new customer
+types. Each one prints the reason and asks again without using up the staff member's task, so
+the run still ends with exactly the victory numbers (5 paid, $73.50, 75.6). That also shows the
+VIP and Critic go through the same seat, order, serve, eat and pay checks as a Regular customer:
+the VIP is still billed $13.50, and the Critic still pays at 52.
+
+| Turn | Input | Message shown |
+|---|---|---|
+| 4 | `vip` as the waiter action | Invalid input, Please enter a valid number only |
+| 4 | Take an order from C2 (VIP, still in the queue) | Customer 2 cannot order, they are WAITING |
+| 4 | Seat C2 at table `99` | Please enter a number between 1 and 2 |
+| 5 | Serve order 2 (the VIP hasn't ordered yet) | There is no order for C2. |
+| 5 | Chef cooks order 9 | There is no order for C9. |
+| 6 | Chef cooks order 2 (the VIP's Burger was just served) | Order 2 cannot be cooked, it is SERVED |
+| 10 | Seat C4 (Critic) at T1, which C3 is using | Table 1 is occupied |
+| 11 | Take an order from C4 (Critic, still in the queue) | Customer 4 cannot order, they are WAITING |
+| 12 | Serve order 4 (the Critic hasn't ordered yet) | There is no order for C4. |
+| 13 | Serve order 4 (Pasta at 1/2) | Order 4 is not READY yet, it is IN_PREPARATION |
+| 14 | Chef cooks order 4 (already served) | Order 4 cannot be cooked, it is SERVED |
