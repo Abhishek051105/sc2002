@@ -110,6 +110,12 @@ public abstract class Customer {
      */
     public abstract int getSatisfactionDecay();
 
+    /**
+     * Short name the UI shows, e.g. "Regular", "VIP", "Critic".
+     * Each subclass names itself, so the UI never needs instanceof.
+     */
+    public abstract String getTypeLabel();
+
     // =========================
     // Satisfaction Handling
     // =========================
@@ -119,7 +125,6 @@ public abstract class Customer {
      *
      * @return true if the customer leaves.
      */
-    public abstract String getTypeLabel();
     public final boolean decreaseSatisfaction() {
 
         if (status == CustomerStatus.WAITING
