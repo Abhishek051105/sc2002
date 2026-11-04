@@ -136,6 +136,4 @@ the same format as Abhishek's and Aekas's, which I checked before committing.
 - Calling a method that returns something doesn't store the result. My loop built each customer
   and then lost it.
 - Guard before access: `args.length > 0 && args[0].equals(...)`, in that order.
-- Only commit my own files. Stripping comments from `GameController` would have broken our
-  "untouched" claim.
 - Review even when a teammate says not to. The defeat script would have gone into the tag broken.
