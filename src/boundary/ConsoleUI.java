@@ -23,10 +23,6 @@ public class ConsoleUI {
         this.maxTurns = maxTurns;
     }
 
-    public ConsoleUI(Scanner scanner) {
-    this(scanner, 18);
-    }
-
     /** Turn, revenue, avg (or N/A), queue, tables, which staff can still act. */
     public void showStartOfTurn(int turn, Restaurant restaurant) {
         GameStats stats = restaurant.getStats();
