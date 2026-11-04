@@ -1,4 +1,4 @@
-# Stage 1 Test Notes
+# Test Notes
 
 Every run below is reproducible: the input script in `tests/` is piped into the game, so the
 same input always gives the same output. See the README for the build and run commands.
@@ -110,3 +110,92 @@ ends with exactly the victory numbers.
   Chef never waited while a valid task existed was a victory. The base game only punishes
   idling and delays. Stage 2's Critic customer (loses 12 per turn) is what makes the
   order of choices matter.
+
+## Stage 2 Test Runs
+
+Stage 2 runs use the default command (`java -cp out control.Main`). C2 is the VIP (arrives turn
+4, loses 5 per turn, 10% off) and C4 is the Critic (arrives turn 10, loses 12 per turn, always
+orders the most expensive dish, Pasta). The rest are Regular. The Stage 1 scripts above still give
+their old results when run with `control.Main regular`.
+
+| Script | Result | Paid | Revenue | Avg satisfaction |
+|---|---|---|---|---|
+| `tests/stage2_victory.txt` | VICTORY | 5 | $73.50 | 75.6 |
+| `tests/stage2_defeat.txt` | DEFEAT | 4 | $58.50 | 53.8 (fails the 60 target) |
+| `tests/stage2_invalid_inputs.txt` | VICTORY | 5 | $73.50 | 75.6 |
+
+### Stage 2 victory run (`tests/stage2_victory.txt`)
+
+| Turn | Arrival | Waiter | Chef | What happens |
+|---|---|---|---|---|
+| 1 | C1 Regular | Seat C1 at T1 | Wait | |
+| 2 | | Take C1's order (Salad) | Cook C1 | Salad READY |
+| 3 | | Serve C1 | Wait | C1 eats (84) |
+| 4 | **C2 VIP** | Seat C2 at T2 | Wait | C1 ready to pay |
+| 5 | | Take C2's order (Burger, **$13.50**) | Cook C2 | Burger READY; C1 pays $9.00 |
+| 6 | | Serve C2 | Wait | C2 eats (90) |
+| 7 | C3 Regular | Seat C3 at T1 | Wait | C2 ready to pay |
+| 8 | | Take C3's order (Pasta) | Cook C3 (1/2) | C2 pays **$13.50** |
+| 9 | | Wait | Cook C3 (2/2) | Pasta READY |
+| 10 | **C4 Critic** | Serve C3 | Wait | C3 eats (76); C4 waits in the queue |
+| 11 | | Seat C4 at T2 | Wait | C3 ready to pay |
+| 12 | | Take C4's order (**Pasta**, Critic rule) | Cook C4 (1/2) | C3 pays $18.00 |
+| 13 | C5 Regular | Seat C5 at T1 | Cook C4 (2/2) | Pasta READY |
+| 14 | | Serve C4 | Wait | C4 eats (52) |
+| 15 | | Take C5's order (Burger) | Cook C5 | Burger READY; C4 ready to pay |
+| 16 | C6 Regular | Serve C5 | Wait | C4 pays $18.00 |
+| 17 | | Seat C6 at T2 | Wait | C5 ready to pay |
+| 18 | | Take C6's order (Pasta) | Cook C6 (1/2) | C5 pays $15.00 |
+
+Paid satisfactions: 84, 90 (VIP), 76, 52 (Critic), 76, so the average is 75.6. Revenue is
+$9.00 + $13.50 + $18.00 + $18.00 + $15.00 = $73.50. All three targets pass.
+
+### Stage 2 defeat run (`tests/stage2_defeat.txt`)
+
+The same slow start as the Stage 1 defeat: the Waiter waits on turns 1 to 3. The delay ripples
+through every later customer, and the Critic, who loses 12 per turn, pays at only 28.
+
+| Turn | Arrival | Waiter | Chef | What happens |
+|---|---|---|---|---|
+| 1-3 | C1 Regular (turn 1) | Wait | Wait | C1 waits in the queue |
+| 4 | **C2 VIP** | Seat C1 at T1 | Wait | C2 waits in the queue |
+| 5 | | Take C1's order (Salad) | Cook C1 | Salad READY |
+| 6 | | Serve C1 | Wait | C1 eats (60) |
+| 7 | C3 Regular | Seat C2 at T2 | Wait | C1 ready to pay |
+| 8 | | Take C2's order (Burger, $13.50) | Cook C2 | Burger READY; C1 pays $9.00 |
+| 9 | | Serve C2 | Wait | C2 eats (75) |
+| 10 | **C4 Critic** | Seat C3 at T1 | Wait | C2 ready to pay |
+| 11 | | Take C3's order (Pasta) | Cook C3 (1/2) | C2 pays $13.50 |
+| 12 | | Seat C4 at T2 | Cook C3 (2/2) | Pasta READY |
+| 13 | C5 Regular | Serve C3 | Wait | C3 eats (52) |
+| 14 | | Take C4's order (Pasta) | Cook C4 (1/2) | C3 ready to pay |
+| 15 | | Wait | Cook C4 (2/2) | Pasta READY; C3 pays $18.00 |
+| 16 | C6 Regular | Serve C4 | Wait | C4 eats (28) |
+| 17 | | Wait | Wait | C4 ready to pay |
+| 18 | | Wait | Wait | C4 pays $18.00 |
+
+Paid satisfactions: 60, 75 (VIP), 52, 28 (Critic), so the average is 53.8. Paid count (4) and
+revenue ($58.50) pass, but average satisfaction misses 60, so it's a DEFEAT. In Stage 1 the same
+slow start gave 58.0; the Critic is what pulls it down to 53.8.
+
+### Stage 2 invalid inputs (`tests/stage2_invalid_inputs.txt`)
+
+Replays the Stage 2 victory run with 11 invalid inputs mixed in, aimed at the two new customer
+types. Each one prints the reason and asks again without using up the staff member's task, so
+the run still ends with exactly the victory numbers (5 paid, $73.50, 75.6). That also shows the
+VIP and Critic go through the same seat, order, serve, eat and pay checks as a Regular customer:
+the VIP is still billed $13.50, and the Critic still pays at 52.
+
+| Turn | Input | Message shown |
+|---|---|---|
+| 4 | `vip` as the waiter action | Invalid input, Please enter a valid number only |
+| 4 | Take an order from C2 (VIP, still in the queue) | Customer 2 cannot order, they are WAITING |
+| 4 | Seat C2 at table `99` | Please enter a number between 1 and 2 |
+| 5 | Serve order 2 (the VIP hasn't ordered yet) | There is no order for C2. |
+| 5 | Chef cooks order 9 | There is no order for C9. |
+| 6 | Chef cooks order 2 (the VIP's Burger was just served) | Order 2 cannot be cooked, it is SERVED |
+| 10 | Seat C4 (Critic) at T1, which C3 is using | Table 1 is occupied |
+| 11 | Take an order from C4 (Critic, still in the queue) | Customer 4 cannot order, they are WAITING |
+| 12 | Serve order 4 (the Critic hasn't ordered yet) | There is no order for C4. |
+| 13 | Serve order 4 (Pasta at 1/2) | Order 4 is not READY yet, it is IN_PREPARATION |
+| 14 | Chef cooks order 4 (already served) | Order 4 cannot be cooked, it is SERVED |
