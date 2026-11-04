@@ -119,7 +119,7 @@ Repository: https://github.com/Abhishek051105/sc2002
 | Stage | Tag | What changed | Class diagram |
 |---|---|---|---|
 | 1 | [`stage-1`](https://github.com/Abhishek051105/sc2002/tree/stage-1) | Base game with Regular customers only | [stage1/class-diagram.png](docs/uml/stage1/class-diagram.png) |
-| 2 | [`stage-2`](https://github.com/Abhishek051105/sc2002/tree/stage-2) | Adds VIP and Critic customers | To be added |
+| 2 | [`stage-2`](https://github.com/Abhishek051105/sc2002/tree/stage-2) | Adds VIP and Critic customers | [stage2/class-diagram.png](docs/uml/stage2/class-diagram.png) |
 | 3 | `stage-3` | To be added | To be added |
 
 ### stage-1 → stage-2
@@ -161,6 +161,8 @@ type, and the three Stage 1 scripts give exactly their old results when run with
 
 - Stage 1 class diagram: [PNG](docs/uml/stage1/class-diagram.png) · [PlantUML source](docs/uml/stage1/class-diagram.puml)
 - Stage 1 sequence diagram (one turn, for reference): [PNG](docs/uml/stage1/sequence-diagram.png) · [PlantUML source](docs/uml/stage1/sequence-diagram.puml)
+- Stage 2 class diagram (new and changed classes coloured): [PNG](docs/uml/stage2/class-diagram.png) · [PlantUML source](docs/uml/stage2/class-diagram.puml)
+- Stage 2 sequence diagram (a VIP from arrival to paying the discounted $13.50): [PNG](docs/uml/stage2/sequence-diagram.png) · [PlantUML source](docs/uml/stage2/sequence-diagram.puml)
 - [Key abstractions and SOLID](docs/key-abstractions-and-solid.md)
 - [Design log](docs/design-log.md)
 - [Stage 1 test notes](docs/test-notes.md)
