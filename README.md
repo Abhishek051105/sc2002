@@ -169,12 +169,12 @@ type, and the three Stage 1 scripts give exactly their old results when run with
 
 ## AI history
 
-Each member keeps their full AI chats, in order, on their own branch under `ai-history/`.
+Each member keeps their AI chats for the project, in order, under `ai-history/` on their own branch.
 
-| Member | Branch | Stage 1 |
-|---|---|---|
-| Abhishek | [`abhishek`](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history) | [ai-history/stage-1](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history/stage-1) |
-| Aaryan | to be added | to be added |
-| Aekas | to be added | to be added |
-| Ayush | to be added | to be added |
-| Raghav | to be added | to be added |
+| Member | Branch | Stage 1 | Stage 2 |
+|---|---|---|---|
+| Abhishek | [`abhishek`](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history) | [ai-history/stage-1](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history/stage-1) | [ai-history/stage-2](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history/stage-2) |
+| Aaryan | to be added | to be added | to be added |
+| Aekas | to be added | to be added | to be added |
+| Ayush | to be added | to be added | to be added |
+| Raghav | to be added | to be added | to be added |
