@@ -175,6 +175,6 @@ Each member keeps their AI chats for the project, in order, under `ai-history/` 
 |---|---|---|---|
 | Abhishek | [`abhishek`](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history) | [ai-history/stage-1](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history/stage-1) | [ai-history/stage-2](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history/stage-2) |
 | Aaryan | to be added | to be added | to be added |
-| Aekas | [`aekas`](https://github.com/Abhishek051105/sc2002/tree/aekas/ai-history) | [ai-history/stage-1](https://github.com/Abhishek051105/sc2002/tree/aekas/ai-history/stage-1) | [ai-history/stage-2](https://github.com/Abhishek051105/sc2002/tree/aekas/ai-history/stage-2) |
+| Aekas | to be added | to be added | to be added |
 | Ayush | to be added | to be added | to be added |
 | Raghav | to be added | to be added | to be added |
