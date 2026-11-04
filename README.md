@@ -46,6 +46,7 @@ Get-Content tests\stage1_victory.txt | java -cp out control.Main regular
 |---|---|---|
 | `tests/stage2_victory.txt` | `control.Main` | VICTORY: 5 paid, $73.50, avg 75.6 |
 | `tests/stage2_defeat.txt` | `control.Main` | DEFEAT: 4 paid, $58.50, avg 53.8 (satisfaction target fails) |
+| `tests/stage2_invalid_inputs.txt` | `control.Main` | The Stage 2 victory run with invalid input mixed in; same result as the Stage 2 victory run |
 | `tests/stage1_victory.txt` | `control.Main regular` | VICTORY: 5 paid, $66.00, avg 79.2 |
 | `tests/stage1_defeat.txt` | `control.Main regular` | DEFEAT: 4 paid, $51.00, avg 58.0 (satisfaction target fails) |
 | `tests/stage1_invalid_inputs.txt` | `control.Main regular` | The victory run with invalid input mixed in; same result as the victory run |
@@ -165,7 +166,7 @@ type, and the three Stage 1 scripts give exactly their old results when run with
 - Stage 2 sequence diagram (a VIP from arrival to paying the discounted $13.50): [PNG](docs/uml/stage2/sequence-diagram.png) · [PlantUML source](docs/uml/stage2/sequence-diagram.puml)
 - [Key abstractions and SOLID](docs/key-abstractions-and-solid.md)
 - [Design log](docs/design-log.md)
-- [Stage 1 test notes](docs/test-notes.md)
+- [Test notes (Stage 1 and Stage 2)](docs/test-notes.md)
 
 ## AI history
 
