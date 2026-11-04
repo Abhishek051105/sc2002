@@ -11,7 +11,7 @@ public class RegularCustomer extends Customer {
     }
 
     @Override
-public String getTypeLabel() {
-    return "Regular";
-}
+    public String getTypeLabel() {
+        return "Regular";
+    }
 }
