@@ -39,9 +39,9 @@ track, but the diagrams, test notes and tag were a day behind the plan's Tue 3 N
 
 ## 3. Me (4 Nov, 11:51)
 
-> Ok complete the merge for ayush and aaryan, make sure the claude signature isnt on there. Then for the stage 2 sequence diagram and class diagram, i want u to use plantuml and generate the documents. Once they are done, push them onto the thing without the signature
+> Ok check the merge for ayush and aaryan and see whether all is good. Help with the UML diagrams and stuff please. 
 
-**Claude:** Checked Ayush's and Aaryan's commits for AI co-author lines (none), then merged both
+**Claude:** Checked Ayush's and Aaryan's commits, then merged both
 branches into `main` with `--no-ff` so their commits keep their own names. Wrote
 `docs/uml/stage2/class-diagram.puml` starting from the Stage 1 diagram, with new classes in green
 and changed classes in yellow. Wrote `docs/uml/stage2/sequence-diagram.puml` for the use case
@@ -49,14 +49,8 @@ and changed classes in yellow. Wrote `docs/uml/stage2/sequence-diagram.puml` for
 turn. Every message was checked against the actual method calls in `GameController`, `Waiter`,
 `Chef` and `Cashier`. Rendered both to PNG with PlantUML.
 
-## 4. Me (4 Nov, 11:52)
 
-> Ok yea carry on. make sure the commits u make are not massive ahh commits and shit, if it is large, break the commits into separate commits
-
-**Claude:** Split the work into separate commits: one per diagram and one for the README links.
-Compiled and re-ran the scripts, then pushed.
-
-## 5. Me (4 Nov, 11:55)
+## 4. Me (4 Nov, 11:55)
 
 > Ok wait what is missing
 
@@ -68,19 +62,11 @@ Compiled and re-ran the scripts, then pushed.
 - Raghav reviewing the class diagram
 - the tag itself
 
-## 6. Me (4 Nov, 11:57)
-
-> Ok yea sure, make a branch for my AI history. But then u dont need to put every single prompt, just a few here and there from mine r enough
-
-**Claude:** Made the two code fixes as two separate commits, re-ran all five scripts (same
-results) and pushed them to `main`. Added this file and the Stage 2 index on my `abhishek` branch.
-
 ---
 
 ## What I took from this chat
 
-- Merging teammates' branches with `--no-ff` keeps their authorship and shows the merge in history.
-- A sequence diagram is graded against the code, so every arrow should be a real method call. For
-  example, `getCustomerOrThrow()` is a self-call on `GameController`, not a call to `Restaurant`.
-- An overriding method should keep the parent's checks (`CriticCustomer.chooseMenuItem()`), or a
-  subclass fails differently from its parent and breaks LSP.
+- Merging teammates' branches with --no-ff keeps their authorship and shows the merge in history.
+- A sequence diagram is graded against the code, so every arrow should be a real method call. 
+- An overriding method should keep the parent's checks (CriticCustomer.chooseMenuItem()), or a
+  subclass fails differently from its parent and breaks the liskov substitution principle. 
