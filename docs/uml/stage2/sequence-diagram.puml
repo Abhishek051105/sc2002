@@ -21,6 +21,9 @@ entity "t2:Table" as T
 entity ":Menu" as M
 entity "o:Order" as O
 entity ":GameStats" as GS
+control ":Objective" as OBJ
+
+loop currentTurn = 1 to 18 (only turns 4 to 8 shown)
 
 == Turn 4: the VIP arrives and is seated ==
 GC -> AS : customersArrivingAt(4)
@@ -38,6 +41,7 @@ UI -> V : getTypeLabel()
 V --> UI : "VIP"
 note right of UI : queue shows [C2 VIP (Sat: 100)]\nwith no instanceof in the UI
 
+loop until the Waiter has a valid task
 GC -> UI : askWaiterTask()
 UI -> Manager : prompt
 Manager --> UI : 1 (Seat)
@@ -48,23 +52,42 @@ GC -> GC : getCustomerOrThrow(2)
 GC -> R : findCustomer(2)
 R --> GC : vip
 GC -> UI : askTableNo(2)
-UI --> GC : 2
-GC -> R : getTable(2)
-R --> GC : t2
-GC -> W : seat(vip, t2)
-activate W
-W -> T : assign(vip)
-W -> V : seat()
-W --> GC
-deactivate W
-GC -> R : removeFromQueue(vip)
+alt manager picks Table 1 (C1 is still eating there)
+  UI --> GC : 1
+  GC -> R : getTable(1)
+  R --> GC : t1
+  GC -> W : seat(vip, t1)
+  W --> GC : throws InvalidActionException("Table 1 is occupied")
+  GC -> UI : showError("Table 1 is occupied")
+  note right of GC : markActed() is never reached,\nso the Waiter's task is not used up\nand the loop asks again
+else manager picks Table 2 (free)
+  UI --> GC : 2
+  GC -> R : getTable(2)
+  R --> GC : t2
+  GC -> W : seat(vip, t2)
+  activate W
+  W -> T : assign(vip)
+  W -> V : seat()
+  W --> GC
+  deactivate W
+  GC -> R : removeFromQueue(vip)
+end
+end
 
+loop for each customer in restaurant.getAllCustomers()
 GC -> V : decreaseSatisfaction()
 activate V
+opt status is WAITING, SEATED or WAITING_FOR_FOOD
 V -> V : getSatisfactionDecay()
 note right of V : polymorphic: VIP = 5\n(Regular 8, Critic 12)
+end
 V --> GC : false (100 -> 95, stays)
 deactivate V
+opt decreaseSatisfaction() returned true (satisfaction hit 0)
+  GC -> R : customerLeft(c)
+  GC -> GS : recordDeparture()
+end
+end
 
 == Turn 5: order taken, bill locked at the VIP price ==
 GC -> UI : askWaiterTask()
@@ -99,6 +122,7 @@ deactivate W
 GC -> R : addOrder(o)
 GC -> UI : showMessage("C2 ordered Burger.")
 
+loop until a valid order id or 0 (Wait)
 GC -> UI : askOrderIdOrWait()
 UI --> GC : 2
 GC -> GC : getOrderOrThrow(2)
@@ -107,6 +131,7 @@ R --> GC : o
 GC -> CH : prepare(o)
 CH -> O : advanceOneUnit()
 note right of O : 1/1 units -> READY
+end
 GC -> V : decreaseSatisfaction()
 V --> GC : false (95 -> 90)
 
@@ -127,8 +152,12 @@ deactivate W
 GC -> GS : recordServed()
 
 == Turn 7: the VIP finishes eating ==
+loop for each customer in restaurant.getAllCustomers()
+opt status == SERVED and servedTurn < currentTurn
 GC -> V : finishEating(7)
 note right of V : servedTurn 6 < 7 -> READY_TO_PAY\n(readyToPayTurn = 7)
+end
+end
 
 == Turn 8: the Cashier takes the discounted payment ==
 GC -> CA : processNextPayment(restaurant, 8)
@@ -152,4 +181,26 @@ CA --> GC : vip
 deactivate CA
 GC -> UI : showMessage("C2 paid.")
 UI -> Manager : Revenue: $22.50 (C1 $9.00 + C2 $13.50)
+end
+
+== After turn 18: the result check (step 6) ==
+GC -> R : getStats()
+R --> GC : stats
+GC -> OBJ : isMet(stats)
+activate OBJ
+OBJ -> GS : getPaidCount()
+GS --> OBJ : 5
+OBJ -> GS : getRevenueCents()
+GS --> OBJ : 7350
+OBJ -> GS : getAverageSatisfaction()
+GS --> OBJ : 75.6
+OBJ --> GC : won
+deactivate OBJ
+alt won (paid >= 4 AND revenue >= $45.00 AND average >= 60)
+  GC -> UI : showFinalResult(true, stats, objective)
+  UI -> Manager : VICTORY
+else any target missed
+  GC -> UI : showFinalResult(false, stats, objective)
+  UI -> Manager : DEFEAT
+end
 @enduml
