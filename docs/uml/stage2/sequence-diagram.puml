@@ -1,6 +1,14 @@
 @startuml sequence-diagram
 title Restaurant Rush - Stage 2 Sequence Diagram\nUse case: Serve a VIP customer, from arrival to paying the discounted bill ($13.50)
 
+legend top left
+  <b>Stage:</b> 2 (VIP and Critic customers), base setting, run = tests/stage2_victory.txt
+  <b>Starting conditions (turn 4):</b> revenue $0.00; C1 (Regular) eating at Table 1;
+  Table 2 free; C2 (VIP) arrives with satisfaction 100; Waiter and Chef have not acted
+  <b>Outcome:</b> C2 pays $13.50 (10% VIP discount) at satisfaction 90 on turn 8;
+  after turn 18 the game ends in VICTORY (5 paid, $73.50, average 75.6)
+endlegend
+
 skinparam shadowing false
 autonumber
 hide footbox
@@ -91,36 +99,45 @@ end
 
 == Turn 5: order taken, bill locked at the VIP price ==
 GC -> UI : askWaiterTask()
-UI --> GC : TAKE_ORDER
-GC -> UI : askCustomerId("Take order from: C")
-UI --> GC : 2
-GC -> GC : getCustomerOrThrow(2)
-GC -> R : findCustomer(2)
-R --> GC : vip
-GC -> W : takeOrder(vip, menu)
-activate W
-W -> V : chooseMenuItem(menu)
-activate V
-note right of V : inherited Customer rule:\nmenu[(2 - 1) % 3] = Burger
-V -> M : size()
-M --> V : 3
-V -> M : getItem(1)
-M --> V : burger
-V --> W : burger
-deactivate V
-W -> V : calculateBill(1500)
-activate V
-V -> V : super.calculateBill(1500)
-note right of V : parent checks the price is\nnot negative, returns 1500
-V --> W : 1350 (1500 * 90 / 100)
-deactivate V
-create O
-W -> O : <<create>> new Order(2, vip, burger, 1350)
-W -> V : orderTaken()
-W --> GC : o
-deactivate W
-GC -> R : addOrder(o)
-GC -> UI : showMessage("C2 ordered Burger.")
+UI -> Manager : prompt
+alt manager chooses Take order (this run)
+  Manager --> UI : 2 (Take order)
+  UI --> GC : TAKE_ORDER
+  GC -> UI : askCustomerId("Take order from: C")
+  UI --> GC : 2
+  GC -> GC : getCustomerOrThrow(2)
+  GC -> R : findCustomer(2)
+  R --> GC : vip
+  GC -> W : takeOrder(vip, menu)
+  activate W
+  W -> V : chooseMenuItem(menu)
+  activate V
+  note right of V : inherited Customer rule:\nmenu[(2 - 1) % 3] = Burger
+  V -> M : size()
+  M --> V : 3
+  V -> M : getItem(1)
+  M --> V : burger
+  V --> W : burger
+  deactivate V
+  W -> V : calculateBill(1500)
+  activate V
+  V -> V : super.calculateBill(1500)
+  note right of V : parent checks the price is\nnot negative, returns 1500
+  V --> W : 1350 (1500 * 90 / 100)
+  deactivate V
+  create O
+  W -> O : <<create>> new Order(2, vip, burger, 1350)
+  W -> V : orderTaken()
+  W --> GC : o
+  deactivate W
+  GC -> R : addOrder(o)
+  GC -> UI : showMessage("C2 ordered Burger.")
+else manager chooses Wait instead
+  Manager --> UI : 4 (Wait)
+  UI --> GC : WAIT
+  GC -> UI : showMessage("Waiter waits this turn.")
+  note right of GC : <b>this choice changes the outcome:</b>\nC2 stays SEATED and loses another 5,\nso the order is a turn later and C2\npays at 85 at best instead of 90
+end
 
 loop until a valid order id or 0 (Wait)
 GC -> UI : askOrderIdOrWait()
