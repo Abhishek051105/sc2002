@@ -15,17 +15,19 @@ public class Restaurant {
     private final List<Order> allOrders = new ArrayList<>();
     private final Menu menu;
     private final Waiter waiter;
+    private final Host host;
     private final Chef chef;
     private final Cashier cashier;
     private final GameStats stats;
 
-    /** Builds numTables tables, the default menu, the 3 staff and stats. */
+    /** Builds numTables tables, the default menu, the staff and stats. */
     public Restaurant(int numTables) {
         for (int i = 0; i < numTables; i++) {
             tables.add(new Table(i + 1));
         }
         menu = new Menu();
         waiter = new Waiter();
+        host = new Host();
         chef = new Chef();
         cashier = new Cashier();
         stats = new GameStats();
@@ -73,7 +75,7 @@ public class Restaurant {
     }
 
     public List<Staff> getAllStaff() {
-        return List.of(waiter, chef, cashier);
+        return List.of(waiter, host, chef, cashier);
     }
 
     /** null if not found (matches getCustomerId()). */
@@ -124,6 +126,10 @@ public class Restaurant {
 
     public Waiter getWaiter() {
         return waiter;
+    }
+
+    public Host getHost() {
+        return host;
     }
 
     public Chef getChef() {
