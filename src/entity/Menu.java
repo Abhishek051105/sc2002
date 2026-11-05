@@ -17,6 +17,11 @@ public class Menu {
         items.add(pasta);
     }
 
+    // so new items (like combos) can be added on top of the base menu
+    public void addItem(MenuItem item){
+        items.add(item);
+    }
+
     public MenuItem getItem(int index){
        return items.get(index); 
     }
