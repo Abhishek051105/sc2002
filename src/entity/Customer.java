@@ -131,6 +131,27 @@ public abstract class Customer {
         return false;
     }
 
+    /**
+     * Happy Hour recovery, at the start of the turn. Only customers still
+     * waiting for a table or food (the same statuses that lose satisfaction)
+     * recover, up to a maximum of 100.
+     *
+     * @return true if the satisfaction actually went up.
+     */
+    public final boolean recoverSatisfaction(int points) {
+
+        if (status == CustomerStatus.WAITING
+                || status == CustomerStatus.SEATED
+                || status == CustomerStatus.WAITING_FOR_FOOD) {
+
+            int before = satisfaction;
+            satisfaction = Math.min(100, satisfaction + points);
+            return satisfaction > before;
+        }
+
+        return false;
+    }
+
     // These are final so a subclass (VIP, Critic, ...) can't change the
     // order of the steps. Subclasses only change decay, food choice and bill.
 
