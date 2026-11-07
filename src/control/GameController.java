@@ -4,10 +4,13 @@ import boundary.ConsoleUI;
 import entity.Customer;
 import entity.CustomerStatus;
 import entity.GameStats;
+import entity.HappyHour;
 import entity.InvalidActionException;
 import entity.Order;
+import entity.PricingPolicy;
 import entity.Restaurant;
 import entity.Staff;
+import entity.StandardPricing;
 import entity.Table;
 import entity.WaiterTask;
 
@@ -24,6 +27,8 @@ public class GameController {
     private final ConsoleUI ui;
     private final ArrivalSchedule schedule;
     private final Objective objective;
+    private final HappyHour happyHour = new HappyHour();
+    private final PricingPolicy standardPricing = new StandardPricing();
     private int currentTurn;
 
     public GameController(Restaurant restaurant, ConsoleUI ui,
@@ -163,6 +168,14 @@ public class GameController {
     }
 
     // ---- small helpers so a bad ID becomes a normal "try again" error ----
+
+    /** Happy Hour's pricing while it is on, otherwise standard prices. */
+    private PricingPolicy currentPricing() {
+        if (happyHour.isActive()) {
+            return happyHour;
+        }
+        return standardPricing;
+    }
 
     private Customer getCustomerOrThrow(int id) throws InvalidActionException {
         Customer c = restaurant.findCustomer(id);
