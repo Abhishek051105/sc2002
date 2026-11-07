@@ -6,6 +6,7 @@ import entity.CustomerStatus;
 import entity.GameStats;
 import entity.HappyHour;
 import entity.InvalidActionException;
+import entity.Money;
 import entity.Order;
 import entity.PricingPolicy;
 import entity.Restaurant;
@@ -92,9 +93,10 @@ public class GameController {
                     }
                     case TAKE_ORDER -> {
                         Customer c = getCustomerOrThrow(ui.askCustomerId("Take order from: C"));
-                        Order o = restaurant.getWaiter().takeOrder(c, restaurant.getMenu());
+                        Order o = restaurant.getWaiter().takeOrder(c, restaurant.getMenu(), currentPricing());
                         restaurant.addOrder(o);
-                        ui.showMessage("C" + c.getCustomerId() + " ordered " + o.getItem().getName() + ".");
+                        ui.showMessage("C" + c.getCustomerId() + " ordered " + o.getItem().getName()
+                                + " (" + Money.format(o.getBillCents()) + ").");
                     }
                     case SERVE -> {
                         Order o = getOrderOrThrow(ui.askCustomerId("Serve order of: C"));
