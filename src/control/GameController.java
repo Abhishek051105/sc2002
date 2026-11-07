@@ -63,6 +63,7 @@ public class GameController {
         handleEatingAndPayment();
         handleEndOfTurnWaiting();
         ui.showEndOfTurn(currentTurn, restaurant);
+        happyHour.endTurn();   // last: Happy Hour counts down after the whole turn
     }
 
     /** Step 1 */
