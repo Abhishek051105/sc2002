@@ -77,10 +77,10 @@ public class ConsoleUI {
 
         // Staff Availability
         System.out.println("Staff Available:");
-        System.out.println("  Waiter : " + (restaurant.getWaiter().hasActedThisTurn() ? "Acted" : "Ready"));
-        System.out.println("  Chef   : " + (restaurant.getChef().hasActedThisTurn() ? "Acted" : "Ready"));
-        System.out.println("  Cashier: " + (restaurant.getCashier().hasActedThisTurn() ? "Acted" : "Ready"));
-        System.out.println("----------------------------------------");
+        System.out.println("  Host   : Ready");
+        System.out.println("  Waiter : Ready");
+        System.out.println("  Chef   : Ready");
+        System.out.println("  Cashier: Ready");
     }
     
     /** Served, departures, revenue, avg, turns used. */
@@ -192,11 +192,9 @@ public class ConsoleUI {
         }
         return "FAIL";
     }
-
-    /**
-     * Re-prompts on junk/blank/out of range.
-     * Throws NoSuchElementException if the input runs out (Main catches it).
-     */
+     //Re-prompts on junk/blank/out of range.
+     //Throws NoSuchElementException if the input runs out (Main catches it).
+     
     private int readInt(int min, int max) {
         while (true) {
             try {
@@ -217,5 +215,30 @@ public class ConsoleUI {
                 System.out.println("Invalid input, Please enter a valid number only");
             }
         }
+    }
+    
+     //Asks whether to activate Happy Hour at the start of the turn. Can only be used once per game and lasts for 2 turns.
+    
+     public boolean askStartHappyHour() {
+        System.out.print("Start Happy Hour now? It can be used once and lasts 2 turns (1 = yes, 0 = no): ");
+        return readInt(0, 1) == 1;
+    }
+
+    
+    //Displays current Happy Hour status and remaining turns.
+    
+    public void showHappyHourStatus(int turnsLeft) {
+        System.out.println("*** HAPPY HOUR ON: 20% off new orders, " + turnsLeft
+                + " turn(s) left including this one ***");
+    }
+
+    
+    //Asks which customer the Host should seat, or 0 to wait.
+    
+    public int askHostCustomerIdOrWait() {
+        System.out.println("");
+        System.out.println("--- Host Action ---");
+        System.out.print("Customer to seat (0 = wait): C");
+        return readInt(0, 999);
     }
 }
