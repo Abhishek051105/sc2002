@@ -19,18 +19,24 @@ public class Waiter extends Staff {
         markActed();   // only reached if all checks passed
     }
 
-    /**
-     * c must be SEATED. Uses c.chooseMenuItem(menu) and c.calculateBill(price)
-     * to lock the bill, creates the Order (id = customer id), calls c.orderTaken().
-     */
+    /** Same as takeOrder(c, menu, pricing) at standard prices. */
     public Order takeOrder(Customer c, Menu menu) throws InvalidActionException {
+        return takeOrder(c, menu, new StandardPricing());
+    }
+
+    /**
+     * c must be SEATED. Uses c.chooseMenuItem(menu), then c.calculateBill(price)
+     * and pricing.applyTo(bill) to lock the bill, creates the Order
+     * (id = customer id), calls c.orderTaken().
+     */
+    public Order takeOrder(Customer c, Menu menu, PricingPolicy pricing) throws InvalidActionException {
         checkCanAct();
         if (c.getStatus() != CustomerStatus.SEATED) {
             throw new InvalidActionException("Customer " + c.getCustomerId()
                     + " cannot order, they are " + c.getStatus());
         }
         MenuItem item = c.chooseMenuItem(menu);
-        int billCents = c.calculateBill(item.getPriceCents());
+        int billCents = pricing.applyTo(c.calculateBill(item.getPriceCents()));   // VIP first, then Happy Hour
         Order o = new Order(c.getCustomerId(), c, item, billCents);
         c.orderTaken();
         markActed();
