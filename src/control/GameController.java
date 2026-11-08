@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Sequences the 6 steps of a turn. It never checks customer subclasses (no instanceof),
+ * Runs the steps of each turn in order. It never checks customer subclasses (no instanceof),
  * it just calls methods on Customer and lets each subclass behave its own way.
  * Catches InvalidActionException and re-prompts.
  */
@@ -41,23 +41,24 @@ public class GameController {
         this.currentTurn = 0;
     }
 
-    /** Turns 1..MAX_TURNS, then step 6 (VICTORY / DEFEAT). */
+    /** Turns 1..MAX_TURNS, then VICTORY / DEFEAT. */
     public void run() {
         for (currentTurn = 1; currentTurn <= GameConfig.MAX_TURNS; currentTurn++) {
             playTurn();
         }
-        // Step 6: only after the last turn
+        // only after the last turn
         GameStats stats = restaurant.getStats();
         boolean won = objective.isMet(stats);
         ui.showFinalResult(won, stats, objective);
     }
 
-    /** Steps 1-5 for currentTurn. Resets staff first. */
+    /** One turn, in order. Resets staff first. */
     private void playTurn() {
         for (Staff s : restaurant.getAllStaff()) {
             s.startNewTurn();
         }
         handleArrivals();
+        handleHappyHour();
         handleWaiter();
         handleChef();               // must come after the waiter
         handleEatingAndPayment();
@@ -74,6 +75,30 @@ public class GameController {
             ui.showMessage("C" + c.getCustomerId() + " has arrived.");
         }
         ui.showStartOfTurn(currentTurn, restaurant);
+    }
+
+    /**
+     * Stage 3: offer Happy Hour if it hasn't been used yet. While it is on,
+     * everyone still waiting for a table or food gets +15 satisfaction.
+     */
+    private void handleHappyHour() {
+        if (happyHour.isAvailable() && ui.askStartHappyHour()) {
+            try {
+                happyHour.activate();
+            } catch (InvalidActionException e) {
+                ui.showError(e.getMessage());
+            }
+        }
+
+        if (happyHour.isActive()) {
+            ui.showHappyHourStatus(happyHour.getTurnsLeft());
+            for (Customer c : restaurant.getAllCustomers()) {
+                boolean wentUp = c.recoverSatisfaction(HappyHour.RECOVERY_POINTS);
+                if (wentUp) {   // only print it if the number actually changed
+                    ui.showMessage("C" + c.getCustomerId() + " recovers to " + c.getSatisfaction() + ".");
+                }
+            }
+        }
     }
 
     /** Step 2: loop until a valid task or WAIT */
