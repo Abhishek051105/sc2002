@@ -4,10 +4,14 @@ import boundary.ConsoleUI;
 import entity.Customer;
 import entity.CustomerStatus;
 import entity.GameStats;
+import entity.HappyHour;
 import entity.InvalidActionException;
+import entity.Money;
 import entity.Order;
+import entity.PricingPolicy;
 import entity.Restaurant;
 import entity.Staff;
+import entity.StandardPricing;
 import entity.Table;
 import entity.WaiterTask;
 
@@ -24,6 +28,8 @@ public class GameController {
     private final ConsoleUI ui;
     private final ArrivalSchedule schedule;
     private final Objective objective;
+    private final HappyHour happyHour = new HappyHour();
+    private final PricingPolicy standardPricing = new StandardPricing();
     private int currentTurn;
 
     public GameController(Restaurant restaurant, ConsoleUI ui,
@@ -57,6 +63,7 @@ public class GameController {
         handleEatingAndPayment();
         handleEndOfTurnWaiting();
         ui.showEndOfTurn(currentTurn, restaurant);
+        happyHour.endTurn();   // last: Happy Hour counts down after the whole turn
     }
 
     /** Step 1 */
@@ -87,9 +94,10 @@ public class GameController {
                     }
                     case TAKE_ORDER -> {
                         Customer c = getCustomerOrThrow(ui.askCustomerId("Take order from: C"));
-                        Order o = restaurant.getWaiter().takeOrder(c, restaurant.getMenu());
+                        Order o = restaurant.getWaiter().takeOrder(c, restaurant.getMenu(), currentPricing());
                         restaurant.addOrder(o);
-                        ui.showMessage("C" + c.getCustomerId() + " ordered " + o.getItem().getName() + ".");
+                        ui.showMessage("C" + c.getCustomerId() + " ordered " + o.getItem().getName()
+                                + " (" + Money.format(o.getBillCents()) + ").");
                     }
                     case SERVE -> {
                         Order o = getOrderOrThrow(ui.askCustomerId("Serve order of: C"));
@@ -163,6 +171,14 @@ public class GameController {
     }
 
     // ---- small helpers so a bad ID becomes a normal "try again" error ----
+
+    /** Happy Hour's pricing while it is on, otherwise standard prices. */
+    private PricingPolicy currentPricing() {
+        if (happyHour.isActive()) {
+            return happyHour;
+        }
+        return standardPricing;
+    }
 
     private Customer getCustomerOrThrow(int id) throws InvalidActionException {
         Customer c = restaurant.findCustomer(id);

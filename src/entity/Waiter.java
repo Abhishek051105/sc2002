@@ -19,10 +19,6 @@ public class Waiter extends Staff {
         markActed();   // only reached if all checks passed
     }
 
-    /** Same as takeOrder(c, menu, pricing) at standard prices. */
-    public Order takeOrder(Customer c, Menu menu) throws InvalidActionException {
-        return takeOrder(c, menu, new StandardPricing());
-    }
 
     /**
      * c must be SEATED. Uses c.chooseMenuItem(menu), then c.calculateBill(price)
