@@ -77,10 +77,11 @@ public class ConsoleUI {
 
         // Staff Availability
         System.out.println("Staff Available:");
-        System.out.println("  Host   : Ready");
-        System.out.println("  Waiter : Ready");
-        System.out.println("  Chef   : Ready");
-        System.out.println("  Cashier: Ready");
+        System.out.println("  Host   : " + (restaurant.getHost().hasActedThisTurn() ? "Acted" : "Ready"));
+        System.out.println("  Waiter : " + (restaurant.getWaiter().hasActedThisTurn() ? "Acted" : "Ready"));
+        System.out.println("  Chef   : " + (restaurant.getChef().hasActedThisTurn() ? "Acted" : "Ready"));
+        System.out.println("  Cashier: " + (restaurant.getCashier().hasActedThisTurn() ? "Acted" : "Ready"));
+        System.out.println("----------------------------------------");
     }
     
     /** Served, departures, revenue, avg, turns used. */
