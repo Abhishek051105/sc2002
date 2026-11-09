@@ -124,6 +124,23 @@ Everything in the Stage 1 table still applies. Stage 2 adds two customer types:
 | Display | The queue and table lines show each customer's type, and an order shows its bill (for example `Seated C2 VIP ... \| Order: Burger $13.50`) |
 | Bill | Worked out once, when the order is taken, and locked into the order |
 
+## Rules and decisions (Stage 3)
+
+Everything in the Stage 1 and Stage 2 tables still applies. Stage 3 adds a Host, combo meals and
+Happy Hour.
+
+| Topic | Decision |
+|---|---|
+| Turn order | Arrivals, start-of-turn display, **Happy Hour**, **Host**, Waiter, Chef, payment and eating, waiting, end-of-turn display, then Happy Hour counts down |
+| Host | Seats one queued customer per turn at a free table, or waits. Same checks as the Waiter's seat. The Waiter can still seat as well |
+| Host before Waiter | The Host is at the door, so the Waiter can take the order of someone the Host just seated, in the same turn |
+| Combos | Salad + Pasta $24.30 (3 units) and Burger + Salad $21.60 (2 units): 90% of the two prices added up, and the two prep times added up. Added to the end of the menu, so the menu has 5 items |
+| Food choice | Unchanged: customer *n* orders `menu[(n-1) % 5]` (C4 would get Salad + Pasta, C5 gets Burger + Salad). The Critic still takes the most expensive item, which is now Salad + Pasta |
+| Happy Hour | Can be started once per game, at the start of a turn. Lasts that turn and the next |
+| Happy Hour price | 20% off orders taken while it is on, applied after the customer's own bill rule (a VIP gets 10% off, then 20% off that) |
+| Happy Hour recovery | While it is on, every customer still waiting for a table or food (WAITING, SEATED, WAITING_FOR_FOOD) gets +15 satisfaction at the start of the turn, up to 100. The same three statuses that lose satisfaction |
+| Rounding | Discounts round to the nearest cent in integer cents: `(cents * 80 + 50) / 100` |
+
 ## Project layout
 
 ```
