@@ -199,3 +199,127 @@ the VIP is still billed $13.50, and the Critic still pays at 52.
 | 12 | Serve order 4 (the Critic hasn't ordered yet) | There is no order for C4. |
 | 13 | Serve order 4 (Pasta at 1/2) | Order 4 is not READY yet, it is IN_PREPARATION |
 | 14 | Chef cooks order 4 (already served) | Order 4 cannot be cooked, it is SERVED |
+
+## Stage 3 Test Runs
+
+Stage 3 runs use the default command (`java -cp out control.Main`). Every turn now starts with
+the Happy Hour question (only until it has been used) and the Host prompt, before the Waiter and
+the Chef. The menu has 5 items: Salad, Burger, Pasta, Salad + Pasta ($24.30, 3 units) and
+Burger + Salad ($21.60, 2 units). With the same food rule, C4 (Critic, most expensive item) now
+orders Salad + Pasta and C5 orders Burger + Salad.
+
+| Script | Result | Paid | Revenue | Avg satisfaction |
+|---|---|---|---|---|
+| `tests/stage3_victory.txt` | VICTORY | 5 | $81.54 | 84.6 |
+| `tests/stage3_defeat.txt` | DEFEAT | 3 (fails the 4 target) | $40.50 (fails the $45 target) | 65.0 |
+| `tests/stage3_invalid_inputs.txt` | VICTORY | 5 | $81.54 | 84.6 |
+| `tests/stage3_slow_start_with_host.txt` | VICTORY | 4 | $64.80 | 72.3 |
+
+### Stage 3 victory run (`tests/stage3_victory.txt`)
+
+Uses all three Stage 3 features. The Host seats each new arrival on the turn they arrive, so the
+Waiter can take their order in the same turn.
+
+| Turn | Arrival | Happy Hour | Host | Waiter | Chef | What happens |
+|---|---|---|---|---|---|---|
+| 1 | C1 Regular | No | Seat C1 at T1 | Take C1's order (Salad) | Cook C1 | Host + Waiter in one turn; Salad READY |
+| 2 | | No | Wait | Serve C1 | Wait | C1 eats (92) |
+| 3 | | No | Wait | Wait | Wait | C1 ready to pay |
+| 4 | **C2 VIP** | No | Seat C2 at T2 | Take C2's order (Burger, $13.50) | Cook C2 | C1 pays $9.00 |
+| 5 | | No | Wait | Serve C2 | Wait | C2 eats (95) |
+| 6 | | No | Wait | Wait | Wait | C2 ready to pay |
+| 7 | C3 Regular | No | Seat C3 at T1 | Take C3's order (Pasta) | Cook C3 (1/2) | C2 pays $13.50 |
+| 8 | | No | Wait | Wait | Cook C3 (2/2) | Pasta READY |
+| 9 | | No | Wait | Serve C3 | Wait | C3 eats (84) |
+| 10 | **C4 Critic** | **Yes** | Seat C4 at T2 | Take C4's order (**Salad + Pasta**, $24.30 → **$19.44**) | Cook C4 (1/3) | Happy Hour turn 1 |
+| 11 | | (on) | Wait | Wait | Cook C4 (2/3) | Happy Hour turn 2: C4 recovers to 100; C3 pays $18.00 |
+| 12 | | | Wait | Wait | Cook C4 (3/3) | Combo READY |
+| 13 | C5 Regular | | Seat C5 at T1 | Serve C4 | Wait | C4 eats (76). The Waiter can only do one thing, so C5's order waits |
+| 14 | | | Wait | Take C5's order (Burger + Salad, $21.60) | Cook C5 (1/2) | C4 ready to pay |
+| 15 | | | Wait | Wait | Cook C5 (2/2) | Combo READY; C4 pays $19.44 |
+| 16 | C6 Regular | | Seat C6 at T2 | Serve C5 | Wait | C5 eats (76) |
+| 17 | | | Wait | Wait | Wait | C5 ready to pay |
+| 18 | | | Wait | Wait | Wait | C5 pays $21.60 |
+
+Paid satisfactions: 92, 95 (VIP), 84, 76 (Critic), 76, so the average is 84.6. Revenue is
+$9.00 + $13.50 + $18.00 + $19.44 + $21.60 = $81.54. All three targets pass.
+
+Things this run shows:
+- **Combo pricing:** Salad + Pasta is 90% of $9.00 + $18.00 = $24.30, and takes 1 + 2 = 3 units.
+- **Happy Hour on a combo:** $24.30 × 0.8 = $19.44, rounded to the nearest cent.
+- **Happy Hour recovery:** on its second turn the Critic is WAITING_FOR_FOOD at 88 and recovers
+  to 100. C3 (SERVED) gets nothing, because only customers still waiting for a table or food recover.
+- **Critic and combos:** the Critic picks Salad + Pasta by himself, because it is now the most
+  expensive item. `CriticCustomer` was not changed.
+
+### Stage 3 defeat run (`tests/stage3_defeat.txt`)
+
+Same slow start as the Stage 2 defeat (the Waiter waits on turns 1 to 3), plus two bad Stage 3
+choices: Happy Hour is used on turn 1, when only C1 is here and nobody is ordering, and the Host
+is never used, so the Waiter has to do all the seating as well.
+
+| Turn | Arrival | Happy Hour | Host | Waiter | Chef | What happens |
+|---|---|---|---|---|---|---|
+| 1 | C1 Regular | **Yes** (wasted) | Wait | Wait | Wait | Nobody to discount |
+| 2 | | (on) | Wait | Wait | Wait | C1 recovers 92 → 100, then loses it again |
+| 3 | | | Wait | Wait | Wait | |
+| 4 | **C2 VIP** | | Wait | Seat C1 at T1 | Wait | C2 waits in the queue |
+| 5 | | | Wait | Take C1's order (Salad) | Cook C1 | Salad READY (no discount, Happy Hour is over) |
+| 6 | | | Wait | Serve C1 | Wait | C1 eats (68) |
+| 7 | C3 Regular | | Wait | Seat C2 at T2 | Wait | C1 ready to pay |
+| 8 | | | Wait | Take C2's order (Burger, $13.50) | Cook C2 | Burger READY; C1 pays $9.00 |
+| 9 | | | Wait | Serve C2 | Wait | C2 eats (75) |
+| 10 | **C4 Critic** | | Wait | Seat C3 at T1 | Wait | C2 ready to pay |
+| 11 | | | Wait | Take C3's order (Pasta) | Cook C3 (1/2) | C2 pays $13.50 |
+| 12 | | | Wait | Seat C4 at T2 | Cook C3 (2/2) | Pasta READY |
+| 13 | C5 Regular | | Wait | Serve C3 | Wait | C3 eats (52) |
+| 14 | | | Wait | Take C4's order (Salad + Pasta, $24.30) | Cook C4 (1/3) | C3 ready to pay |
+| 15 | | | Wait | Wait | Cook C4 (2/3) | C3 pays $18.00 |
+| 16 | C6 Regular | | Wait | Seat C5 at T1 | Cook C4 (3/3) | Combo READY |
+| 17 | | | Wait | Serve C4 | Wait | C4 eats (16) |
+| 18 | | | Wait | Take C5's order | Cook C5 (1/2) | C4 ready to pay, but the game ends |
+
+Only 3 customers pay (68, 75 (VIP) and 52, so the average is 65.0), and revenue is $40.50. Both
+the paid target and the revenue target fail, so it's a DEFEAT.
+
+**Which choice caused it:** in the Stage 2 defeat, the same slow start still got 4 customers to
+pay. Here the Critic orders the 3-unit combo, so his food is only ready on turn 16 and he can't
+pay before the game ends. The Host is the fix: `tests/stage3_slow_start_with_host.txt` keeps the
+same wasted turns 1 to 3 and the same wasted Happy Hour, but lets the Host do the seating. The
+Waiter gets those turns back, the Critic pays on turn 16, and the run becomes a VICTORY (4 paid,
+$64.80, 72.3). The only difference between the two runs is whether the manager uses the Host.
+
+### Stage 3 invalid inputs (`tests/stage3_invalid_inputs.txt`)
+
+Replays the Stage 3 victory run with 8 invalid inputs mixed in, aimed at the two new prompts.
+Each one prints the reason and asks again without using up the Host's (or Waiter's) task, so the
+run still ends with exactly the victory numbers (5 paid, $81.54, 84.6).
+
+| Turn | Input | Message shown |
+|---|---|---|
+| 1 | `abc` at the Happy Hour prompt | Invalid input, Please enter a valid number only |
+| 1 | `2` at the Happy Hour prompt | Please enter a number between 0 and 1 |
+| 4 | Host seats C1 (already seated, ready to pay) | Customer 1 is not in the queue |
+| 4 | Host seats C2 at T1, which C1 is using | Table 1 is occupied |
+| 4 | Host seats C9 (doesn't exist) | There is no customer C9. |
+| 4 | Waiter tries to seat C2, whom the Host just seated | Customer 2 is not in the queue |
+| 7 | Host seats C3 at table `5` | Please enter a number between 1 and 2 |
+| 10 | `yes` at the Happy Hour prompt | Invalid input, Please enter a valid number only |
+
+After the Host has seated C2 on turn 4, the Waiter's rejected seat doesn't use up his task, and
+he still takes C2's order in the same turn.
+
+### Regression: what still works
+
+Each Stage 1 and Stage 2 script was turned into a Stage 3 version by answering `0` (no Happy
+Hour) and `0` (Host waits) at the start of every turn. With the new features unused, every
+earlier result is exactly the same on the Stage 3 build.
+
+| Script | Command | Expected (stage-1 / stage-2 tag) | Stage 3 build |
+|---|---|---|---|
+| `tests/stage1_victory_on_stage3.txt` | `control.Main regular` | VICTORY, $66.00, 79.2 | same |
+| `tests/stage1_defeat_on_stage3.txt` | `control.Main regular` | DEFEAT, $51.00, 58.0 | same |
+| `tests/stage1_invalid_inputs_on_stage3.txt` | `control.Main regular` | VICTORY, $66.00, 79.2 | same |
+| `tests/stage2_victory_on_stage3.txt` | `control.Main stage2` | VICTORY, $73.50, 75.6 | same |
+| `tests/stage2_defeat_on_stage3.txt` | `control.Main stage2` | DEFEAT, $58.50, 53.8 | same |
+| `tests/stage2_invalid_inputs_on_stage3.txt` | `control.Main stage2` | VICTORY, $73.50, 75.6 | same |
