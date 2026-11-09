@@ -159,7 +159,7 @@ Repository: https://github.com/Abhishek051105/sc2002
 |---|---|---|---|
 | 1 | [`stage-1`](https://github.com/Abhishek051105/sc2002/tree/stage-1) | Base game with Regular customers only | [stage1/class-diagram.png](docs/uml/stage1/class-diagram.png) |
 | 2 | [`stage-2`](https://github.com/Abhishek051105/sc2002/tree/stage-2) | Adds VIP and Critic customers | [stage2/class-diagram.png](docs/uml/stage2/class-diagram.png) |
-| 3 | `stage-3` | To be added | To be added |
+| 3 | [`stage-3`](https://github.com/Abhishek051105/sc2002/tree/stage-3) | Adds a Host, combo meals and Happy Hour | [stage3/class-diagram.png](docs/uml/stage3/class-diagram.png) |
 
 ### stage-1 → stage-2
 
@@ -196,15 +196,68 @@ bill and dish, and the rest of the game just calls those methods.
 type, and the three Stage 1 scripts give exactly their old results when run with `regular`
 (79.2, 58.0, 79.2).
 
+### stage-2 → stage-3
+
+All changes: [compare stage-2...stage-3](https://github.com/Abhishek051105/sc2002/compare/stage-2...stage-3)
+
+Stage 3 extends Stage 2 instead of rebuilding it. Combos and the Host are new classes that plug
+into existing hierarchies (`MenuItem` and `Staff`). Happy Hour needed one real change: the
+Waiter now takes a `PricingPolicy` when it takes an order, so the price can change without the
+Waiter knowing which discount is running.
+
+**New files**
+
+| File | Responsibility |
+|---|---|
+| `entity/Host.java` | Extends `Staff`. `seat(c, table)` with the same checks as the Waiter's seat, one per turn |
+| `entity/ComboMeal.java` | Extends `MenuItem` and holds its two items. Name, price (90% of both) and prep units (both added) are worked out once in the constructor |
+| `entity/PricingPolicy.java` | Interface: `int applyTo(int billCents)` |
+| `entity/StandardPricing.java` | Normal pricing: returns the bill unchanged |
+| `entity/HappyHour.java` | Implements `PricingPolicy` (20% off). Also tracks "used once" and the turns left |
+| `tests/stage3_*.txt` | Stage 3 victory, defeat and invalid-input runs, plus the defeat's slow start played with the Host |
+| `tests/*_on_stage3.txt` | The six Stage 1 and Stage 2 scripts with `0` answered to the two new prompts |
+| `docs/uml/stage3/` | Stage 3 class diagram |
+
+**Changed files**
+
+| File | Change | Reason |
+|---|---|---|
+| `entity/Waiter` | `takeOrder(c, menu, pricing)`; the bill is `pricing.applyTo(c.calculateBill(price))` | Happy Hour changes the price, but the Waiter depends only on the `PricingPolicy` abstraction (DIP). The customer's own rule (VIP 10% off) runs first, then the policy |
+| `entity/Customer` | New final method `recoverSatisfaction(points)` | Happy Hour's +15 is a satisfaction rule, so it lives next to `decreaseSatisfaction()`, using the same three statuses. Final like the other flow methods, so no subclass can break it |
+| `entity/Menu` | New `addItem(item)` | So combos can be added on top of the base menu without editing the constructor |
+| `entity/Restaurant` | Owns a `Host`, `getHost()`, and the Host is in `getAllStaff()` | The Restaurant already owns all staff (composition), and `getAllStaff()` resets the Host's turn with the others |
+| `control/GameController` | New steps `handleHappyHour()` and `handleHost()` before the Waiter, `currentPricing()`, and `happyHour.endTurn()` after each turn | The two new decisions in a turn. The Host goes before the Waiter so the Waiter can take the order of someone the Host just seated |
+| `control/Main` | Registers the two combos. New `stage2` argument keeps the Stage 2 menu | Setup is where new menu items belong. `stage2` and `regular` let the old scripts run on this build |
+| `boundary/ConsoleUI` | Happy Hour and Host prompts, Happy Hour status line, Host in the staff list | Input and display only; the rules stay in the controller and entities |
+
+**Unchanged:** `Chef`, `Cashier`, `Order`, `MenuItem`, `Table`, `GameStats`, `Objective`,
+`Staff`, `RegularCustomer`, `VIPCustomer`, `CriticCustomer`, `ArrivalSchedule`, `CustomerType`,
+`GameConfig`. Combos work with no change to `Order`, `Chef` or `CriticCustomer`: a `ComboMeal`
+is a `MenuItem`, so `Order` reads its prep units, and the Critic picks Salad + Pasta by himself
+because it is now the most expensive item.
+
+**What still works:** with Happy Hour and the Host unused (`0` to both prompts), every Stage 1
+and Stage 2 script gives exactly its old result on the Stage 3 build:
+
+| Script | Command | Result on stage-1 / stage-2 | Result on stage-3 |
+|---|---|---|---|
+| `stage1_victory_on_stage3.txt` | `control.Main regular` | VICTORY, $66.00, 79.2 | same |
+| `stage1_defeat_on_stage3.txt` | `control.Main regular` | DEFEAT, $51.00, 58.0 | same |
+| `stage1_invalid_inputs_on_stage3.txt` | `control.Main regular` | VICTORY, $66.00, 79.2 | same |
+| `stage2_victory_on_stage3.txt` | `control.Main stage2` | VICTORY, $73.50, 75.6 | same |
+| `stage2_defeat_on_stage3.txt` | `control.Main stage2` | DEFEAT, $58.50, 53.8 | same |
+| `stage2_invalid_inputs_on_stage3.txt` | `control.Main stage2` | VICTORY, $73.50, 75.6 | same |
+
 ## Design documents
 
 - Stage 1 class diagram: [PNG](docs/uml/stage1/class-diagram.png) · [PlantUML source](docs/uml/stage1/class-diagram.puml)
 - Stage 1 sequence diagram (one turn, for reference): [PNG](docs/uml/stage1/sequence-diagram.png) · [PlantUML source](docs/uml/stage1/sequence-diagram.puml)
 - Stage 2 class diagram (new and changed classes coloured): [PNG](docs/uml/stage2/class-diagram.png) · [PlantUML source](docs/uml/stage2/class-diagram.puml)
 - Stage 2 sequence diagram (a VIP from arrival to paying the discounted $13.50): [PNG](docs/uml/stage2/sequence-diagram.png) · [PlantUML source](docs/uml/stage2/sequence-diagram.puml)
+- Stage 3 class diagram (new and changed classes coloured): [PNG](docs/uml/stage3/class-diagram.png) · [PlantUML source](docs/uml/stage3/class-diagram.puml)
 - [Key abstractions and SOLID](docs/key-abstractions-and-solid.md)
 - [Design log](docs/design-log.md)
-- [Test notes (Stage 1 and Stage 2)](docs/test-notes.md)
+- [Test notes (Stages 1 to 3)](docs/test-notes.md)
 
 ## AI history
 
