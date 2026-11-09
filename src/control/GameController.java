@@ -59,6 +59,7 @@ public class GameController {
         }
         handleArrivals();
         handleHappyHour();
+        handleHost();               // before the waiter, so the waiter can take the order this turn
         handleWaiter();
         handleChef();               // must come after the waiter
         handleEatingAndPayment();
@@ -97,6 +98,30 @@ public class GameController {
                 if (wentUp) {   // only print it if the number actually changed
                     ui.showMessage("C" + c.getCustomerId() + " recovers to " + c.getSatisfaction() + ".");
                 }
+            }
+        }
+    }
+
+    /** Stage 3: the Host seats one queued customer, or waits. Loops until valid. */
+    private void handleHost() {
+        while (true) {
+            int id = ui.askHostCustomerIdOrWait();
+            if (id == 0) {
+                ui.showMessage("Host waits this turn.");
+                return;
+            }
+            try {
+                Customer c = getCustomerOrThrow(id);
+                Table t = restaurant.getTable(ui.askTableNo(restaurant.getTables().size()));
+                if (t == null) {
+                    throw new InvalidActionException("That table does not exist.");
+                }
+                restaurant.getHost().seat(c, t);
+                restaurant.removeFromQueue(c);
+                ui.showMessage("Host seated C" + c.getCustomerId() + " at Table " + t.getTableNo() + ".");
+                return;
+            } catch (InvalidActionException e) {
+                ui.showError(e.getMessage());   // Host can try again
             }
         }
     }
