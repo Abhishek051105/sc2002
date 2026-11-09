@@ -2,8 +2,9 @@
 
 Console restaurant-management game for SC2002. Group: Raghav, Abhishek, Aaryan, Aekas, Ayush.
 
-You manage a restaurant for 18 turns. Each turn the Waiter and the Chef can do one task each,
-and the Cashier takes one payment automatically. You win by ending turn 18 with **at least 4
+You manage a restaurant for 18 turns. Each turn the Host, the Waiter and the Chef can do one
+task each, and the Cashier takes one payment automatically. Once per game you can also start a
+Happy Hour. You win by ending turn 18 with **at least 4
 paid customers, at least $45.00 revenue and an average satisfaction of at least 60**.
 
 ## Build and run
@@ -22,9 +23,14 @@ javac -d out (Get-ChildItem -Recurse src -Filter *.java).FullName
 java -cp out control.Main
 ```
 
-`java -cp out control.Main` plays the Stage 2 setting (Regular, VIP and Critic customers).
-`java -cp out control.Main regular` plays the Stage 1 setting (six Regular customers) on the
-same build.
+| Command | Setting |
+|---|---|
+| `java -cp out control.Main` | Stage 3: Regular, VIP and Critic customers, the two combos on the menu, Host and Happy Hour |
+| `java -cp out control.Main stage2` | Stage 2 menu (no combos). Used to re-run the Stage 2 scripts |
+| `java -cp out control.Main regular` | Stage 1: six Regular customers, no combos. Used to re-run the Stage 1 scripts |
+
+The Host and Happy Hour prompts are shown in every mode. Answering `0` to both gives exactly the
+Stage 1 or Stage 2 game.
 
 ## Reproducible test runs
 
@@ -35,14 +41,27 @@ java -cp out control.Main < tests/stage1_victory.txt                  # Bash or 
 Get-Content tests\stage1_victory.txt | java -cp out control.Main      # PowerShell
 ```
 
-The Stage 1 scripts are run with the `regular` argument:
+The Stage 1 scripts are run with the `regular` argument, and the Stage 2 ones with `stage2`:
 
 ```
-java -cp out control.Main regular < tests/stage1_victory.txt
-Get-Content tests\stage1_victory.txt | java -cp out control.Main regular
+java -cp out control.Main regular < tests/stage1_victory_on_stage3.txt
+Get-Content tests\stage1_victory_on_stage3.txt | java -cp out control.Main regular
 ```
 
 | Script | Command | Expected result |
+|---|---|---|
+| `tests/stage3_victory.txt` | `control.Main` | VICTORY: 5 paid, $81.54, avg 84.6 |
+| `tests/stage3_defeat.txt` | `control.Main` | DEFEAT: 3 paid, $40.50, avg 65.0 (paid and revenue targets fail) |
+| `tests/stage3_invalid_inputs.txt` | `control.Main` | The Stage 3 victory run with invalid input mixed in; same result as the Stage 3 victory run |
+| `tests/stage3_slow_start_with_host.txt` | `control.Main` | The defeat's slow start, but using the Host: VICTORY, 4 paid, $64.80, avg 72.3 |
+| `tests/stage2_*_on_stage3.txt` | `control.Main stage2` | Same results as the Stage 2 scripts below |
+| `tests/stage1_*_on_stage3.txt` | `control.Main regular` | Same results as the Stage 1 scripts below |
+
+The scripts below are kept from the earlier tags. They have no answers for the Host and Happy
+Hour prompts, so they only run on the `stage-1` and `stage-2` builds; the `*_on_stage3.txt`
+versions are the same runs for this build.
+
+| Script | Command (on its own tag) | Expected result |
 |---|---|---|
 | `tests/stage2_victory.txt` | `control.Main` | VICTORY: 5 paid, $73.50, avg 75.6 |
 | `tests/stage2_defeat.txt` | `control.Main` | DEFEAT: 4 paid, $58.50, avg 53.8 (satisfaction target fails) |
@@ -58,6 +77,8 @@ Turn-by-turn tables and the list of invalid inputs tested are in
 
 Each turn shows the queue, the tables and the staff, then asks:
 
+- **Happy Hour** (until it has been used): `1` to start it now, `0` not yet.
+- **Host:** the customer to seat (then the table), or `0` to wait.
 - **Waiter:** `1` Seat, `2` Take order, `3` Serve, `4` Wait. Customers are picked by number
   (C3 is `3`) and tables by number.
 - **Chef:** the order number to cook, or `0` to wait. An order's number is its customer's number.
