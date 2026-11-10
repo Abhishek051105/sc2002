@@ -1,7 +1,5 @@
 # Abhishek: AI history, Stage 1
 
-My project-related AI chats for Stage 1, in order. Each file is a selection of my prompts
-(copied word for word) with Claude's replies summarised, not the full transcript.
 
 | File | Chat | Dates (SGT) | What it covers |
 |---|---|---|---|
