@@ -254,7 +254,7 @@ and Stage 2 script gives exactly its old result on the Stage 3 build:
 - Stage 1 sequence diagram (one turn, for reference): [PNG](docs/uml/stage1/sequence-diagram.png) · [PlantUML source](docs/uml/stage1/sequence-diagram.puml)
 - Stage 2 class diagram (new and changed classes coloured): [PNG](docs/uml/stage2/class-diagram.png) · [PlantUML source](docs/uml/stage2/class-diagram.puml)
 - Stage 2 sequence diagram (a VIP from arrival to paying the discounted $13.50): [PNG](docs/uml/stage2/sequence-diagram.png) · [PlantUML source](docs/uml/stage2/sequence-diagram.puml)
-- Stage 3 class diagram (new and changed classes coloured): [PNG](docs/uml/stage3/class-diagram.png) · [PlantUML source](docs/uml/stage3/class-diagram.puml)
+- Stage 3 class diagram (new and changed classes coloured): [PNG](docs/uml/stage3/Stage-3_Class%20Diagram.png) · [PlantUML source](docs/uml/stage3/class-diagram.puml)
 - [Key abstractions and SOLID](docs/key-abstractions-and-solid.md)
 - [Design log](docs/design-log.md)
 - [Test notes (Stages 1 to 3)](docs/test-notes.md)
