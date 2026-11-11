@@ -42,6 +42,9 @@ package "control" {
 
   class GameController <<control>> #FFF2C2 {
     - currentTurn : int
+    - happyHour : HappyHour
+    - standardPricing : PricingPolicy
+
     + GameController(restaurant : Restaurant, ui : ConsoleUI, schedule : ArrivalSchedule, objective : Objective)
     + run() : void
     - playTurn() : void
@@ -55,7 +58,7 @@ package "control" {
     - currentPricing() : PricingPolicy
     - getCustomerOrThrow(id : int) : Customer
     - getOrderOrThrow(id : int) : Order
-  }
+}
 
   class ArrivalSchedule <<control>> {
     - arrivalTurns : List<Integer>
