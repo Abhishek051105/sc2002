@@ -159,7 +159,7 @@ Repository: https://github.com/Abhishek051105/sc2002
 |---|---|---|---|
 | 1 | [`stage-1`](https://github.com/Abhishek051105/sc2002/tree/stage-1) | Base game with Regular customers only | [stage1/class-diagram.png](docs/uml/stage1/class-diagram.png) |
 | 2 | [`stage-2`](https://github.com/Abhishek051105/sc2002/tree/stage-2) | Adds VIP and Critic customers | [stage2/class-diagram.png](docs/uml/stage2/class-diagram.png) |
-| 3 | [`stage-3`](https://github.com/Abhishek051105/sc2002/tree/stage-3) | Adds a Host, combo meals and Happy Hour | [stage3/class-diagram.png](docs/uml/stage3/class-diagram.png) |
+| 3 | [`stage-3`](https://github.com/Abhishek051105/sc2002/tree/stage-3) | Adds a Host, combo meals and Happy Hour | [stage3/class-diagram.png](docs/uml/stage3/Stage-3_Class&20Diagram) |
 
 ### stage-1 → stage-2
 
