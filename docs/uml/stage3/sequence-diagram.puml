@@ -1,0 +1,286 @@
+@startuml sequence-diagram
+title Restaurant Rush - Stage 3 Sequence Diagram\nUse case: The Host seats a Critic, who orders a combo meal during Happy Hour and pays $19.44
+
+legend top left
+  <b>Stage:</b> 3 (Host, combo meals, Happy Hour), default mode, run = tests/stage3_victory.txt
+  <b>Starting conditions (turn 10):</b> revenue $22.50; C3 (Regular) eating at Table 1;
+  Table 2 free; C4 (Critic) arrives with satisfaction 100; Happy Hour not used yet;
+  Host, Waiter, Chef and Cashier have not acted
+  <b>Outcome:</b> C4 pays $19.44 (Salad + Pasta combo $24.30, then 20% Happy Hour off)
+  at satisfaction 76 on turn 15; after turn 18 the game ends in VICTORY (5 paid, $81.54, average 84.6)
+endlegend
+
+skinparam shadowing false
+autonumber
+hide footbox
+
+' Scenario: tests/stage3_victory.txt. C4 is the Critic (arrival 4, turn 10).
+' Turn 10: Happy Hour on, Host seats C4 at Table 2, Waiter takes the combo order, Chef cooks 1/3.
+' Turn 11: Happy Hour recovers C4 to 100, Chef cooks 2/3. Turn 12: Chef cooks 3/3 (READY).
+' Turn 13: served. Turn 14: finishes eating. Turn 15: pays $19.44.
+' Only the calls that involve C4 are shown.
+
+actor Manager
+boundary ":ConsoleUI" as UI
+control "Main" as MAIN
+control ":GameController" as GC
+control ":ArrivalSchedule" as AS
+entity ":Restaurant" as R
+entity ":HappyHour" as HH
+entity ":Host" as H
+entity ":Waiter" as W
+entity ":Chef" as CH
+entity ":Cashier" as CA
+entity "t2:Table" as T
+entity ":Menu" as M
+entity "o:Order" as O
+entity ":GameStats" as GS
+control ":Objective" as OBJ
+
+== Start-up (Main, before turn 1): the combo goes on the menu ==
+MAIN -> M : getItem(0)
+M --> MAIN : salad
+MAIN -> M : getItem(2)
+M --> MAIN : pasta
+create entity "sp:ComboMeal" as CM
+MAIN -> CM : <<create>> new ComboMeal(salad, pasta)
+activate CM
+CM -> CM : super("Salad + Pasta", 2430, 3)
+note right of CM : a ComboMeal IS-A MenuItem:\nprice = (900 + 1800) * 90 / 100 = 2430\nprep units = 1 + 2 = 3
+deactivate CM
+MAIN -> M : addItem(sp)
+note right of M : menu is now Salad, Burger, Pasta,\nSalad + Pasta, Burger + Salad
+MAIN -> GC : run()
+
+loop currentTurn = 1 to 18 (only turns 10 to 15 shown)
+
+== Turn 10: Happy Hour starts, the Host seats the Critic ==
+GC -> AS : customersArrivingAt(10)
+activate AS
+AS -> AS : createCustomer(CRITIC, 4, 10)
+create entity "c4:CriticCustomer" as C
+AS -> C : <<create>> new CriticCustomer(4, 10)
+AS --> GC : [c4]
+deactivate AS
+GC -> R : addArrival(c4)
+GC -> UI : showStartOfTurn(10, restaurant)
+
+opt happyHour.isAvailable() (not used yet this game)
+GC -> HH : isAvailable()
+HH --> GC : true
+GC -> UI : askStartHappyHour()
+UI -> Manager : prompt
+alt manager answers 1 (start Happy Hour, this run)
+  Manager --> UI : 1
+  UI --> GC : true
+  GC -> HH : activate()
+  note right of HH : used = true\nturnsLeft = 2 (this turn and the next)
+else manager answers 0 (no Happy Hour)
+  Manager --> UI : 0
+  UI --> GC : false
+  note right of GC : <b>this choice changes the outcome:</b>\nC4's bill stays at $24.30 and there is no\n+15 recovery on turn 11, so C4 pays at 64\ninstead of 76 (game: $86.40, average 82.2)
+end
+end
+
+GC -> HH : isActive()
+HH --> GC : true
+GC -> UI : showHappyHourStatus(2)
+loop for each customer in restaurant.getAllCustomers()
+GC -> C : recoverSatisfaction(15)
+C --> GC : false (already at 100)
+end
+
+loop until the Host seats a valid customer or 0 (Wait)
+GC -> UI : askHostCustomerIdOrWait()
+UI -> Manager : prompt
+Manager --> UI : 4
+UI --> GC : 4
+GC -> GC : getCustomerOrThrow(4)
+GC -> R : findCustomer(4)
+R --> GC : c4
+GC -> UI : askTableNo(2)
+alt manager picks Table 1 (C3 is still eating there)
+  UI --> GC : 1
+  GC -> R : getTable(1)
+  R --> GC : t1
+  GC -> R : getHost()
+  R --> GC : host
+  GC -> H : seat(c4, t1)
+  H --> GC : throws InvalidActionException("Table 1 is occupied")
+  GC -> UI : showError("Table 1 is occupied")
+  note right of GC : markActed() is never reached,\nso the Host's task is not used up\nand the loop asks again
+else manager picks Table 2 (free)
+  UI --> GC : 2
+  GC -> R : getTable(2)
+  R --> GC : t2
+  GC -> R : getHost()
+  R --> GC : host
+  GC -> H : seat(c4, t2)
+  activate H
+  H -> T : assign(c4)
+  H -> C : seat()
+  H --> GC
+  deactivate H
+  GC -> R : removeFromQueue(c4)
+  GC -> UI : showMessage("Host seated C4 at Table 2.")
+end
+end
+note right of GC : the Host did the seating, so the Waiter\nis still free to take C4's order this turn
+
+loop until the Waiter has a valid task
+GC -> UI : askWaiterTask()
+UI -> Manager : prompt
+Manager --> UI : 2 (Take order)
+UI --> GC : TAKE_ORDER
+GC -> UI : askCustomerId("Take order from: C")
+UI --> GC : 4
+GC -> GC : getCustomerOrThrow(4)
+GC -> R : findCustomer(4)
+R --> GC : c4
+GC -> GC : currentPricing()
+GC -> HH : isActive()
+HH --> GC : true
+note right of GC : returns happyHour as a PricingPolicy\n(StandardPricing when it is off)
+GC -> W : takeOrder(c4, menu, happyHour)
+activate W
+W -> C : chooseMenuItem(menu)
+activate C
+note right of C : Critic override: the most\nexpensive item on the menu
+loop i = 0 to menu.size() - 1
+C -> M : getItem(i)
+M --> C : item
+end
+C --> W : sp (Salad + Pasta, 2430 beats 2160 and 1800)
+deactivate C
+W -> CM : getPriceCents()
+CM --> W : 2430
+W -> C : calculateBill(2430)
+C --> W : 2430 (no Critic discount)
+W -> HH : applyTo(2430)
+note right of HH : (2430 * 80 + 50) / 100\n20% off, rounded to the cent
+HH --> W : 1944
+create O
+W -> O : <<create>> new Order(4, c4, sp, 1944)
+W -> C : orderTaken()
+W --> GC : o
+deactivate W
+GC -> R : addOrder(o)
+GC -> UI : showMessage("C4 ordered Salad + Pasta ($19.44).")
+end
+
+GC -> CH : prepare(o)
+CH -> O : advanceOneUnit()
+note right of O : 1/3 units, still IN_PREPARATION
+
+loop for each customer in restaurant.getAllCustomers()
+GC -> C : decreaseSatisfaction()
+activate C
+opt status is WAITING, SEATED or WAITING_FOR_FOOD
+C -> C : getSatisfactionDecay()
+note right of C : polymorphic: Critic = 12\n(Regular 8, VIP 5)
+end
+C --> GC : false (100 -> 88, stays)
+deactivate C
+end
+GC -> HH : endTurn()
+note right of HH : turnsLeft 2 -> 1
+
+== Turn 11: Happy Hour's second turn, C4 recovers ==
+note right of GC : isAvailable() is now false,\nso Happy Hour is not offered again
+GC -> HH : isActive()
+HH --> GC : true
+GC -> UI : showHappyHourStatus(1)
+GC -> C : recoverSatisfaction(15)
+activate C
+opt status is WAITING, SEATED or WAITING_FOR_FOOD
+note right of C : WAITING_FOR_FOOD:\n88 -> min(100, 88 + 15) = 100
+end
+C --> GC : true
+deactivate C
+GC -> UI : showMessage("C4 recovers to 100.")
+GC -> CH : prepare(o)
+CH -> O : advanceOneUnit()
+note right of O : 2/3 units
+GC -> C : decreaseSatisfaction()
+C --> GC : false (100 -> 88)
+GC -> HH : endTurn()
+note right of HH : turnsLeft 1 -> 0, Happy Hour is over
+
+== Turn 12: the combo is ready ==
+GC -> HH : isActive()
+HH --> GC : false
+GC -> CH : prepare(o)
+CH -> O : advanceOneUnit()
+note right of O : 3/3 units -> READY
+GC -> C : decreaseSatisfaction()
+C --> GC : false (88 -> 76)
+
+== Turn 13: food served ==
+GC -> UI : askWaiterTask()
+UI --> GC : SERVE
+GC -> UI : askCustomerId("Serve order of: C")
+UI --> GC : 4
+GC -> GC : getOrderOrThrow(4)
+GC -> R : findOrder(4)
+R --> GC : o
+GC -> W : serve(o, 13)
+activate W
+W -> O : markServed()
+W -> C : serve(13)
+W --> GC
+deactivate W
+GC -> GS : recordServed()
+
+== Turn 14: the Critic finishes eating ==
+loop for each customer in restaurant.getAllCustomers()
+opt status == SERVED and servedTurn < currentTurn
+GC -> C : finishEating(14)
+note right of C : servedTurn 13 < 14 -> READY_TO_PAY\n(readyToPayTurn = 14)
+end
+end
+
+== Turn 15: the Cashier takes the Happy Hour price ==
+GC -> CA : processNextPayment(restaurant, 15)
+activate CA
+CA -> R : getAllCustomers()
+R --> CA : customers
+note right of CA : c4 is READY_TO_PAY and\nreadyToPayTurn 14 < 15
+CA -> C : markPaid(15)
+CA -> R : findOrder(4)
+R --> CA : o
+CA -> O : markPaid()
+CA -> R : findTableOf(c4)
+R --> CA : t2
+CA -> T : release()
+CA -> O : getBillCents()
+O --> CA : 1944
+CA -> C : getPaidSatisfaction()
+C --> CA : 76
+CA -> GS : recordPayment(1944, 76)
+CA --> GC : c4
+deactivate CA
+GC -> UI : showMessage("C4 paid.")
+UI -> Manager : Revenue: $59.94
+end
+
+== After turn 18: the result check ==
+GC -> R : getStats()
+R --> GC : stats
+GC -> OBJ : isMet(stats)
+activate OBJ
+OBJ -> GS : getPaidCount()
+GS --> OBJ : 5
+OBJ -> GS : getRevenueCents()
+GS --> OBJ : 8154
+OBJ -> GS : getAverageSatisfaction()
+GS --> OBJ : 84.6
+OBJ --> GC : won
+deactivate OBJ
+alt won (paid >= 4 AND revenue >= $45.00 AND average >= 60)
+  GC -> UI : showFinalResult(true, stats, objective)
+  UI -> Manager : VICTORY
+else any target missed
+  GC -> UI : showFinalResult(false, stats, objective)
+  UI -> Manager : DEFEAT
+end
+@enduml
