@@ -1,103 +1,196 @@
-# AI Interaction History: SC2002 Restaurant Simulation — Stage 1
 
-- **Repository:** `sc2002`
-- **Contributor:** Abhishek
-- **Stage:** 1
-- **Tools Used:** Claude (claude.ai / Claude Code CLI session linked to repository workspace)
-- **Overview:** Documents AI collaboration across Stage 1 architectural decomposition, modular work division, component encapsulation, pre-merge build verification, and Git history sanitization.
+# SC2002 Restaurant Rush - Stage 3 AI History
 
----
+## Chat 01: Understanding the Stage 3 Implementation and Design
 
-## Chat 01: Stage 1 Architecture, Domain Design & Work Breakdown
+- **Tool:** ChatGPT
+- **Date:** 6 November 2026 (SGT)
+- **Stage:** 3
 
-- **Tool:** Claude (Claude Project workspace initialized with project brief, rubric, and OOP lecture slides)
-- **Dates:** 20 Oct 2026 – 29 Oct 2026 (SGT)
-- **Original Chat Reference:** `328f5934-5f5e-474d-955f-404789a4b35b`
-- **Scope:** Architectural decomposition, modular work allocation, component encapsulation, and milestone validation.
+This discussion focused on understanding how Stage 3 extended our existing Stage 2 implementation. I wanted to understand the purpose of the new classes and how they fitted into the existing design, rather than treating them as isolated additions.
 
-### 1. Architectural Scoping & Modular Allocation (20 Oct, 15:03)
+### Me
 
-> We are starting our SC2002 group project (Restaurant Simulation). Based on the course specification, grading rubric, and design principles covered in lectures, provide a structured breakdown for Stage 1. Organize classes using the Boundary-Control-Entity (BCE) pattern, align SOLID principles to specific components, and draft a 5-person modular work allocation across our team (Raghav, Abhishek, Aaryan, Aekas, and Ayush). Include draft PlantUML outlines for initial class and sequence diagrams.
+We are now working on Stage 3 of our restaurant project. I want to understand how the new features fit into our existing code. We have Host, ComboMeal and Happy Hour. Can you explain how these should work with the existing classes and what design principles are involved? Keep the explanation simple because I need to be able to explain the design myself.
 
-**Claude:**
-- Analyzed the project brief and reference architecture to formulate the Stage 1 roadmap:
-  - Mapped core BCE responsibilities and explicitly linked SOLID principles to candidate domain classes.
-  - Outlined turn-execution flow and boundary input handling.
-  - Generated draft PlantUML structural and sequence representations.
-  - Established a 5-person modular division of labor:
-    - **Abhishek:** `Menu`, `MenuItem`, `Order`, `OrderStatus`, `Chef`, `Money` + Sequence Diagram.
-    - **Raghav / Aekas:** Customer lifecycle, state transitions, and billing logic.
-    - **Aaryan / Ayush:** `GameController`, simulation turn orchestration, and CLI boundary handling.
-  - Calculated baseline simulation runs for victory and defeat test benchmarks.
+### ChatGPT
 
-### 2. Component Design & Encapsulation Review (27 Oct, 20:42)
+It explained that Stage 3 was an extension of Stage 2, not a complete redesign.
 
-> Review the implementation for my assigned module (`Menu`, `MenuItem`, `Order`, `OrderStatus`, `Chef`, `Money`). Ensure the design avoids over-engineering; prioritize readable OOP principles, clean getters/setters, robust encapsulation, and straightforward state checks without unnecessary enterprise boilerplate. Verify any interface dependencies with `Restaurant.java`.
+The three main additions were:
 
-**Claude:**
-- Refactored assigned core domain classes to emphasize clean object-oriented fundamentals:
-  - Enforced private field isolation and explicit public getter/accessor contracts.
-  - Utilized direct state-checking methods over complex abstract wrappers or premature design patterns.
-- Verified test suite execution against baseline scenarios.
-- Identified an interface dependency in `Restaurant.java` for Aaryan to adjust method signatures to match the streamlined constructor.
+- **Host:** A new staff member who can seat one waiting customer per turn.
+- **ComboMeal:** A new type of menu item containing two existing menu items, with a combined preparation time and a discounted price.
+- **Happy Hour:** A feature that provides a 20% discount for two turns and allows waiting customers to recover satisfaction.
 
-### 3. Stage 1 Milestone Audit (29 Oct)
+It also explained the purpose of `PricingPolicy`, `StandardPricing` and `HappyHour`. Instead of making the Waiter directly depend on Happy Hour, the Waiter uses the pricing interface. This allows different pricing rules to be used without changing the Waiter's main ordering logic.
 
-> Audit our repository status against the official Stage 1 submission checklist. Confirm whether all core deliverables, simulation test runs, and documentation artifacts are complete before tagging the release.
+### Me
 
-**Claude:**
-- Validated completed Stage 1 requirements:
-  - Game logic execution strictly meeting the stage specification.
-  - Verified victory, defeat, and invalid-input execution benchmark runs.
-  - Verified README documentation and Stage 1 class diagram integration.
-- Outlined pending tasks: Pushing final commits, tagging the `stage-1` Git milestone, and compiling individual AI interaction logs.
+So why do we need an interface here? Wouldn't it be simpler to directly use the HappyHour class?
 
-### 4. Stage 2 Transition & Forward Planning (29 Oct)
+### ChatGPT
 
-> Generate the architectural transition document for Stage 2. Account for upcoming requirements (VIP and Critic customer extensions, modified arrival rates, and discounted billing) and provide a proposed work split adhering to the minimal-modification constraint.
+It explained that directly depending on Happy Hour would make the Waiter more tightly connected to one particular pricing implementation.
 
-**Claude:**
-- Outlined upcoming Stage 2 simulation mechanics:
-  - `CriticCustomer` selection logic (prioritizing highest-priced menu items).
-  - Explicit turn arrivals: Turn 4 (`VIPCustomer`) and Turn 10 (`CriticCustomer`).
-  - Discounted billing calculations: `price * 90 / 100` (integer-cent arithmetic).
-- Established baseline expected results for Stage 2 victory and defeat scenarios.
-- Assigned Stage 2 individual components: VIP sequence diagram construction and `stage-2` tag management.
+Using `PricingPolicy` separates the general pricing rule from its actual implementation. Both normal pricing and Happy Hour pricing can follow the same interface.
+
+### My Reflection
+
+This helped me understand the **Dependency Inversion Principle (DIP)** in a practical way. Previously, I mostly understood design principles as definitions that had to be remembered for examinations. Seeing how `PricingPolicy` was used in our project made the idea clearer.
+
+I also learned that adding a new feature does not always mean creating a completely independent class. The important part is understanding how it interacts with existing components and whether those interactions introduce unnecessary dependencies.
+
+Another thing I realised was that a design decision should be explainable. It is not enough to say that we used an interface because it follows SOLID. We should be able to explain what problem the interface solves.
 
 ---
 
-## Chat 02: Branch Integration & Version Control Hygiene
+## Chat 02: Reviewing and Correcting the Stage 3 UML Class Diagram
 
-- **Tool:** Claude Code (CLI session linked to local Mac development environment)
-- **Dates:** 27 Oct 2026 – 28 Oct 2026 (SGT)
-- **Original Chat Reference:** `8cc97713-af80-4ee6-9f0f-b9079dad5909`
-- **Scope:** Branch compilation verification, merge staging, and Git commit metadata cleaning.
+- **Tool:** ChatGPT
+- **Date:** 11 November 2026 (SGT)
+- **Stage:** 3
 
-### 1. Pre-Merge Verification & Compilation Fix (27 Oct, 20:55)
+By this point, the Stage 3 implementation had been merged, and I was working on my assigned UML class diagram. My responsibility was to ensure that the final diagram accurately represented the implementation.
 
-> Check the feature branch `abhishek` against `main` before merging. Ensure all local implementations for the menu and order classes are intact, verify compilation across the entire project, and stage the integration safely.
+### Me
 
-**Claude:**
-- Verified branch tracking: `main` had not diverged, allowing a clean fast-forward merge.
-- Ran a pre-merge compilation audit and flagged two blocking integration issues:
-  - A compilation error in `Restaurant.java` due to a call to `Menu.createDefault()`, which was removed in the refactor.
-  - A stray legacy package file (`src/restaurant/Cashier.java`) committed unintentionally.
-- Resolved both issues by restoring the required accessor methods and removing the redundant package artifact while preserving domain logic.
-- Compiled the entire project clean and executed the local fast-forward merge on `main`.
+I shared the current `GameController` class from my PlantUML diagram:
 
-### 2. Git Commit Hygiene & Metadata Sanitization (28 Oct, 09:54)
+```plantuml
+class GameController <<control>> #FFF2C2 {
+    - currentTurn : int
+    + GameController(restaurant : Restaurant, ui : ConsoleUI, schedule : ArrivalSchedule, objective : Objective)
+    + run() : void
+    - playTurn() : void
+    - handleArrivals() : void
+    - handleHappyHour() : void
+    - handleHost() : void
+    - handleWaiter() : void
+    - handleChef() : void
+    - handleEatingAndPayment() : void
+    - handleEndOfTurnWaiting() : void
+    - currentPricing() : PricingPolicy
+    - getCustomerOrThrow(id : int) : Customer
+    - getOrderOrThrow(id : int) : Order
+}
+```
 
-> Standardize the recent commit on my branch. Remove automated CLI co-author and AI bot trailer metadata from the commit message to maintain clean repository history, while ensuring the tree diff remains untouched.
+### Me
 
-**Claude:**
-- Verified no new remote commits had been pushed to `main`.
-- Amended the commit message to strip bot attribution and session metadata, preserving an author-clean audit log.
-- Confirmed the commit SHA diff remained identical and provided the safe `git push --force-with-lease` command to update the remote branch.
+This is the current GameController. Is anything missing?
+
+### ChatGPT
+
+It compared the UML representation with the Java implementation and identified two missing attributes:
+
+- `happyHour : HappyHour`
+- `standardPricing : PricingPolicy`
+
+Although the corresponding composition relationships were already represented in the diagram, the actual attributes were missing from the `GameController` class.
+
+### Me
+
+Okay, add and give the complete GameController.
+
+### ChatGPT
+
+It provided the complete updated PlantUML class with the following attributes added:
+
+```plantuml
+class GameController <<control>> #FFF2C2 {
+    - currentTurn : int
+    - happyHour : HappyHour
+    - standardPricing : PricingPolicy
+
+    + GameController(restaurant : Restaurant, ui : ConsoleUI, schedule : ArrivalSchedule, objective : Objective)
+    + run() : void
+    - playTurn() : void
+    - handleArrivals() : void
+    - handleHappyHour() : void
+    - handleHost() : void
+    - handleWaiter() : void
+    - handleChef() : void
+    - handleEatingAndPayment() : void
+    - handleEndOfTurnWaiting() : void
+    - currentPricing() : PricingPolicy
+    - getCustomerOrThrow(id : int) : Customer
+    - getOrderOrThrow(id : int) : Order
+}
+```
+
+It also reminded me to retain the existing composition relationships.
+
+### My Reflection
+
+This was a small correction, but it made me reconsider how carefully I had been checking my UML diagram.
+
+Initially, I was mainly concerned about whether all the classes and methods were present. I had overlooked two attributes that were actually part of the implementation.
+
+I realised that a UML diagram is not simply a drawing of the system's overall structure. It must accurately represent the attributes, methods, visibility and relationships found in the actual code.
+
+I also understood that attributes and relationships communicate different information. The attributes show that `GameController` maintains references to these objects, while the composition relationships explain their ownership.
+
+The biggest lesson for me was that documentation should be validated against the implementation. A diagram can look complete and still contain important omissions.
 
 ---
 
-## Stage 1 Technical Takeaways & OOP Learnings
+## Chat 03: Understanding Stage Changes and Preparing the Final Documentation
 
-- **Monetary Representation:** Storing currency as integer cents rather than floating-point primitives (`float` / `double`) avoids cumulative IEEE-754 precision errors during bill calculations.
-- **Defensive Encapsulation:** Enforcing class invariants through private attributes and explicit state-guard methods ensures objects maintain valid runtime states without exposing mutable internals.
-- **Pre-Merge Compilation Discipline:** Fast-forward merges should never occur blindly without a clean local compile check; removing legacy package artifacts and aligning constructor signatures early prevents broken integration states on `main`.
+- **Tool:** ChatGPT
+- **Date:** 11 November 2026 (SGT)
+- **Stage:** 3
+
+After working on the UML correction, I wanted to make sure I understood the remaining responsibilities assigned to me. My work was not limited to producing the final Stage 3 diagram. I also had to explain how the system evolved across all three stages.
+
+### Me
+
+I have to complete my Stage 3 documentation and contribute to the final report. Can you help me understand what I should explain about the changes between Stage 1, Stage 2 and Stage 3? I don't want to just list the new classes. I want to explain why the changes were made.
+
+### ChatGPT
+
+It explained that the change analysis should distinguish between three categories:
+
+1. **New classes:** Classes introduced to support new functionality.
+2. **Modified classes:** Existing classes changed to accommodate the new requirements.
+3. **Unchanged classes:** Classes that continued to work without modification.
+
+It also explained that each change should have a reason. For example, adding Host required changes to the restaurant's staffing and turn-management logic. Adding ComboMeal introduced a new type of menu item while allowing existing menu and order functionality to be reused.
+
+### Me
+
+How should I explain the evolution of the UML diagrams in the final report?
+
+### ChatGPT
+
+It suggested presenting the three class diagrams in chronological order and explaining the important design changes between them.
+
+Instead of describing every class individually, I should focus on how the architecture developed, what new responsibilities were introduced and how the original design was extended.
+
+### My Reflection
+
+This made me realise that the three UML diagrams should not be treated as three unrelated deliverables. Together, they tell the story of how our software developed.
+
+Stage 1 was about establishing the basic restaurant simulation. Stage 2 introduced additional customer behaviour and pricing requirements. Stage 3 expanded the system further through Host, ComboMeal and Happy Hour.
+
+I also understood that an important part of software engineering is knowing what not to change. Some existing classes could continue to work because the original design was flexible enough to support the new features.
+
+This helped me appreciate the value of inheritance, interfaces and encapsulation beyond simply using them to satisfy design requirements.
+
+---
+
+## Overall Reflection
+
+Looking back at Stage 3, I think my understanding of software design changed from focusing mainly on individual classes to looking at the system as a whole.
+
+During Stage 1, I was more concerned with understanding my assigned implementation and getting the program to work. By Stage 3, my responsibilities required me to examine the relationships between classes, compare different versions of the system and ensure that the documentation accurately represented the final implementation.
+
+One important thing I learned was that software development does not end when the code compiles or the required features work. We also need to communicate our design decisions clearly, justify changes and make sure that the documentation remains consistent with the code.
+
+The correction to `GameController` was a good example. It was only two missing attributes, but identifying them required me to look beyond the appearance of the diagram and compare it with the actual implementation.
+
+More importantly, I learned to question my own work instead of assuming that something was correct simply because I had completed it. I believe this is one of the most useful lessons I will take away from this project.
+
+---
+
+**End of AI Interaction History - Stage 3**
