@@ -217,7 +217,7 @@ Waiter knowing which discount is running.
 | `entity/HappyHour.java` | Implements `PricingPolicy` (20% off). Also tracks "used once" and the turns left |
 | `tests/stage3_*.txt` | Stage 3 victory, defeat and invalid-input runs, plus the defeat's slow start played with the Host |
 | `tests/*_on_stage3.txt` | The six Stage 1 and Stage 2 scripts with `0` answered to the two new prompts |
-| `docs/uml/stage3/` | Stage 3 class diagram |
+| `docs/uml/stage3/` | Stage 3 class and sequence diagrams |
 
 **Changed files**
 
@@ -256,6 +256,7 @@ and Stage 2 script gives exactly its old result on the Stage 3 build:
 - Stage 2 class diagram (new and changed classes coloured): [PNG](docs/uml/stage2/class-diagram.png) · [PlantUML source](docs/uml/stage2/class-diagram.puml)
 - Stage 2 sequence diagram (a VIP from arrival to paying the discounted $13.50): [PNG](docs/uml/stage2/sequence-diagram.png) · [PlantUML source](docs/uml/stage2/sequence-diagram.puml)
 - Stage 3 class diagram (new and changed classes coloured): [PNG](docs/uml/stage3/Stage-3_Class%20Diagram.png) · [PlantUML source](docs/uml/stage3/class-diagram.puml)
+- Stage 3 sequence diagram (the Host seats a Critic, who orders a combo during Happy Hour and pays $19.44): [PlantUML source](docs/uml/stage3/sequence-diagram.puml)
 - [Key abstractions and SOLID](docs/key-abstractions-and-solid.md)
 - [Design log](docs/design-log.md)
 - [Test notes (Stages 1 to 3)](docs/test-notes.md)
