@@ -10,5 +10,5 @@ rebuilt from screenshots I had saved, and covers what they show.
 |---|---|---|---|
 | [`chat-01-stage-1-control-layer.md`](chat-01-stage-1-control-layer.md) | Stage 1: control layer | 22–24 Oct 2026 | Checking Raghav's `Customer` against the spec, agreeing the package layout with the group, and setting up the Stage 1 skeleton for my control classes |
 
-My Stage 2 history ([`../stage-2/`](../stage-2/)) shows my full way of working: Claude explains,
+My Stage 2 history ([`../../stage-2/aaryan/`](../../stage-2/aaryan/)) shows my full way of working: Claude explains,
 I type the code, Claude checks it.
