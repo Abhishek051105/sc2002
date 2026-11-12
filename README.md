@@ -263,12 +263,12 @@ and Stage 2 script gives exactly its old result on the Stage 3 build:
 
 ## AI history
 
-Each member's project-related AI chats, in order, are in [`ai-history/`](ai-history/) on `main`, one folder per member and one subfolder per stage (index: [`ai-history/README.md`](ai-history/README.md)). Each member also keeps the same files on their own branch.
+Every member's project-related AI chats, in order, are in [`ai-history/`](ai-history/), organised by stage: `ai-history/stage-N/<member>/` (index: [`ai-history/README.md`](ai-history/README.md)).
 
 | Member | Stage 1 | Stage 2 | Stage 3 |
 |---|---|---|---|
-| Abhishek | [ai-history/abhishek/stage-1](ai-history/abhishek/stage-1/) | [ai-history/abhishek/stage-2](ai-history/abhishek/stage-2/) | to be added |
-| Aaryan | [ai-history/aaryan/stage-1](ai-history/aaryan/stage-1/) | [ai-history/aaryan/stage-2](ai-history/aaryan/stage-2/) | to be added |
-| Aekas | [ai-history/aekas/stage-1](ai-history/aekas/stage-1/) | [ai-history/aekas/stage-2](ai-history/aekas/stage-2/) | to be added |
-| Ayush | to be added | to be added | to be added |
-| Raghav | [Stage 1](ai-history/raghav/stage-1/) | [Stage 2](ai-history/raghav/stage-2/) | [Stage 3](ai-history/raghav/stage-3/) |
+| Abhishek | [ai-history/stage-1/abhishek](ai-history/stage-1/abhishek/) | [ai-history/stage-2/abhishek](ai-history/stage-2/abhishek/) | to be added |
+| Aaryan | [ai-history/stage-1/aaryan](ai-history/stage-1/aaryan/) | [ai-history/stage-2/aaryan](ai-history/stage-2/aaryan/) | to be added |
+| Aekas | [ai-history/stage-1/aekas](ai-history/stage-1/aekas/) | [ai-history/stage-2/aekas](ai-history/stage-2/aekas/) | to be added |
+| Ayush | [ai-history/stage-1/ayush](ai-history/stage-1/ayush/) | [ai-history/stage-2/ayush](ai-history/stage-2/ayush/) | [ai-history/stage-3/ayush](ai-history/stage-3/ayush/) |
+| Raghav | [ai-history/stage-1/raghav](ai-history/stage-1/raghav/) | [ai-history/stage-2/raghav](ai-history/stage-2/raghav/) | [ai-history/stage-3/raghav](ai-history/stage-3/raghav/) |

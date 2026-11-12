@@ -4,7 +4,7 @@ My project-related AI chats for Stage 2, in order. Each file is a selection of m
 (copied word for word) with Claude's replies summarised, not the full transcript.
 
 The Stage 2 plan was made at the end of my Stage 1 chat
-([`../stage-1/chat-01-restaurant-project-stage-1.md`](../stage-1/chat-01-restaurant-project-stage-1.md), prompt 6).
+([`../../stage-1/abhishek/chat-01-restaurant-project-stage-1.md`](../../stage-1/abhishek/chat-01-restaurant-project-stage-1.md), prompt 6).
 
 | File | Chat | Dates (SGT) | What it covers |
 |---|---|---|---|

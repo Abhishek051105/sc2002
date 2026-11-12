@@ -1,15 +1,17 @@
-# AI History
+# AI history
 
-Each member's project-related AI chats, in chronological order, are organised into one folder per member and one subfolder per stage.
+Every member's project-related AI chats, in order, organised by stage. Each stage folder has one
+subfolder per member, and every folder has a `README.md` listing its chats.
 
-Every stage folder contains its own `README.md` listing the AI chats for that stage.
+| Stage | Abhishek | Aaryan | Aekas | Ayush | Raghav |
+|---|---|---|---|---|---|
+| [Stage 1](stage-1/) | [Abhishek](stage-1/abhishek/) | [Aaryan](stage-1/aaryan/) | [Aekas](stage-1/aekas/) | [Ayush](stage-1/ayush/) | [Raghav](stage-1/raghav/) |
+| [Stage 2](stage-2/) | [Abhishek](stage-2/abhishek/) | [Aaryan](stage-2/aaryan/) | [Aekas](stage-2/aekas/) | [Ayush](stage-2/ayush/) | [Raghav](stage-2/raghav/) |
+| [Stage 3](stage-3/) | [to be added](stage-3/abhishek/) | [to be added](stage-3/aaryan/) | [to be added](stage-3/aekas/) | [Ayush](stage-3/ayush/) | [Raghav](stage-3/raghav/) |
 
-## Member AI History
-
-| Member | Stage 1 | Stage 2 | Stage 3 |
-|---|---|---|---|
-| Abhishek | [Stage 1](abhishek/stage-1/) | [Stage 2](abhishek/stage-2/) | [Stage 3](abhishek/stage-3/) (to be added) |
-| Aaryan | [Stage 1](aaryan/stage-1/) | [Stage 2](aaryan/stage-2/) | [Stage 3](aaryan/stage-3/) (to be added) |
-| Aekas | [Stage 1](aekas/stage-1/) | [Stage 2](aekas/stage-2/) | [Stage 3](aekas/stage-3/) (to be added) |
-| Ayush | [To be added](ayush/) | To be added | To be added |
-| Raghav | [Stage 1](raghav/stage-1/README.md) | [Stage 2](raghav/stage-2/README.md) | [Stage 3](raghav/stage-3/README.md) |
+```
+ai-history/
+  stage-1/  abhishek/  aaryan/  aekas/  ayush/  raghav/
+  stage-2/  abhishek/  aaryan/  aekas/  ayush/  raghav/
+  stage-3/  abhishek/  aaryan/  aekas/  ayush/  raghav/
+```
