@@ -28,13 +28,23 @@
 **Claude:**
 - Wrote this Stage 3 AI history from my four Stage 3 chats, in the same format as my Stage 1 and
   Stage 2 files, and updated the AI-history index tables.
-- Renamed the Stage 3 class diagram PNG to `class-diagram.png` to match the other stages. It
-  couldn't run PlantUML in that session, so the Stage 3 sequence diagram PNG was left for me to
-  export.
-- Pushed everything to `main` as small conventional commits under my name, deleted the merged
-  feature and docs branches, and kept everyone's personal AI-history branches.
-- Tag pushes are blocked from these sessions, so it gave me the command to move the `stage-3` tag
-  to the final commit myself.
+- Renamed the Stage 3 class diagram PNG to `class-diagram.png` to match the other stages.
+- Pushed everything to `main` as small conventional commits under my name, and kept everyone's
+  personal AI-history branches. Branch deletion and tag pushes are blocked from these sessions,
+  so it gave me the commands, and I moved the `stage-3` tag myself.
+
+## 3. The Stage 3 sequence diagram PNG
+
+> wait how did we do for previous sequence diagrams? follow the same method
+
+> Just do it
+
+**Claude:**
+- Checked how the Stage 1 and 2 PNGs were made: rendered from their `.puml` with PlantUML, saved
+  next to the source and committed with a README link.
+- Rendered `docs/uml/stage3/sequence-diagram.png` the same way, checked the whole diagram was
+  there (start-up to the VICTORY/DEFEAT check), and pushed it with the README link as two small
+  commits.
 
 ---
 
