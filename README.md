@@ -159,7 +159,7 @@ Repository: https://github.com/Abhishek051105/sc2002
 |---|---|---|---|
 | 1 | [`stage-1`](https://github.com/Abhishek051105/sc2002/tree/stage-1) | Base game with Regular customers only | [stage1/class-diagram.png](docs/uml/stage1/class-diagram.png) |
 | 2 | [`stage-2`](https://github.com/Abhishek051105/sc2002/tree/stage-2) | Adds VIP and Critic customers | [stage2/class-diagram.png](docs/uml/stage2/class-diagram.png) |
-| 3 | [`stage-3`](https://github.com/Abhishek051105/sc2002/tree/stage-3) | Adds a Host, combo meals and Happy Hour | [stage3/class-diagram.png](docs/uml/stage3/Stage-3_Class%20Diagram.png) |
+| 3 | [`stage-3`](https://github.com/Abhishek051105/sc2002/tree/stage-3) | Adds a Host, combo meals and Happy Hour | [stage3/class-diagram.png](docs/uml/stage3/class-diagram.png) |
 
 
 ### stage-1 → stage-2
@@ -255,7 +255,7 @@ and Stage 2 script gives exactly its old result on the Stage 3 build:
 - Stage 1 sequence diagram (one turn, for reference): [PNG](docs/uml/stage1/sequence-diagram.png) · [PlantUML source](docs/uml/stage1/sequence-diagram.puml)
 - Stage 2 class diagram (new and changed classes coloured): [PNG](docs/uml/stage2/class-diagram.png) · [PlantUML source](docs/uml/stage2/class-diagram.puml)
 - Stage 2 sequence diagram (a VIP from arrival to paying the discounted $13.50): [PNG](docs/uml/stage2/sequence-diagram.png) · [PlantUML source](docs/uml/stage2/sequence-diagram.puml)
-- Stage 3 class diagram (new and changed classes coloured): [PNG](docs/uml/stage3/Stage-3_Class%20Diagram.png) · [PlantUML source](docs/uml/stage3/class-diagram.puml)
+- Stage 3 class diagram (new and changed classes coloured): [PNG](docs/uml/stage3/class-diagram.png) · [PlantUML source](docs/uml/stage3/class-diagram.puml)
 - Stage 3 sequence diagram (the Host seats a Critic, who orders a combo during Happy Hour and pays $19.44): [PlantUML source](docs/uml/stage3/sequence-diagram.puml)
 - [Key abstractions and SOLID](docs/key-abstractions-and-solid.md)
 - [Design log](docs/design-log.md)
