@@ -5,8 +5,7 @@
 - **Original chat:** https://claude.ai/chat/8cc97713-af80-4ee6-9f0f-b9079dad5909
 - **Stage:** 1
 
-A selection of the chat, not the full transcript. My prompts are copied word for word;
-Claude's replies are summarised in my own words.
+
 
 ---
 
