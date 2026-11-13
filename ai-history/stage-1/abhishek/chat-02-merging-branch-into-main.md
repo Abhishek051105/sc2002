@@ -1,8 +1,8 @@
 # Chat 02: Merging branch into main
 
-- **Tool:** Claude (claude.ai, Claude Code session linked to my Mac)
+- **Tool:** Claude
 - **Dates:** Tue 27 Oct 2026 20:55 to Wed 28 Oct 2026 09:54 (SGT)
-- **Original chat:** https://claude.ai/chat/8cc97713-af80-4ee6-9f0f-b9079dad5909
+
 - **Stage:** 1
 
 
