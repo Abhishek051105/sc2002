@@ -296,4 +296,4 @@ Every member's project-related AI chats, in order, are in [`ai-history/`](ai-his
 | Aaryan | to be added | to be added | to be added |
 | Aekas | to be added | to be added | to be added |
 | Ayush | [ai-history/stage-1/ayush](ai-history/stage-1/ayush/) | [ai-history/stage-2/ayush](ai-history/stage-2/ayush/) | [ai-history/stage-3/ayush](ai-history/stage-3/ayush/) |
-| Raghav | to be added | to be added | to be added |
+| Raghav | [ai-history/stage-1/raghav](ai-history/stage-1/raghav/) | [ai-history/stage-2/raghav](ai-history/stage-2/raghav/) | [ai-history/stage-3/raghav](ai-history/stage-3/raghav/) |
