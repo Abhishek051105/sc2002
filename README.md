@@ -54,6 +54,7 @@ Get-Content tests\stage1_victory_on_stage3.txt | java -cp out control.Main regul
 | `tests/stage3_defeat.txt` | `control.Main` | DEFEAT: 3 paid, $40.50, avg 65.0 (paid and revenue targets fail) |
 | `tests/stage3_invalid_inputs.txt` | `control.Main` | The Stage 3 victory run with invalid input mixed in; same result as the Stage 3 victory run |
 | `tests/stage3_slow_start_with_host.txt` | `control.Main` | The defeat's slow start, but using the Host: VICTORY, 4 paid, $64.80, avg 72.3 |
+| `tests/stage3_abandonment.txt` | `control.Main` | Abandonment: C1 is seated and ordered, then everyone waits. C1 leaves on turn 13 (order CANCELLED, Table 1 freed), the Chef's later try at order 1 is rejected, C4 leaves on turn 18. DEFEAT: 0 paid, $0.00, N/A |
 | `tests/stage2_*_on_stage3.txt` | `control.Main stage2` | Same results as the Stage 2 scripts below |
 | `tests/stage1_*_on_stage3.txt` | `control.Main regular` | Same results as the Stage 1 scripts below |
 
@@ -166,6 +167,8 @@ Repository: https://github.com/Abhishek051105/sc2002
 
 All changes: [compare stage-1...stage-2](https://github.com/Abhishek051105/sc2002/compare/stage-1...stage-2)
 
+**Change map (Java classes in `src/`):** stage-1 had 23. **3 added, 6 modified, 0 deleted, 17 unchanged**, so stage-2 has 26.
+
 Stage 2 was built mostly as new files. Two new customer types were added without changing
 `GameController` or any staff class: each customer object decides its own satisfaction loss,
 bill and dish, and the rest of the game just calls those methods.
@@ -190,8 +193,9 @@ bill and dish, and the rest of the game just calls those methods.
 | `control/Main` | Optional `regular` argument uses `ALL_REGULAR` | Lets the Stage 1 scripts run on the Stage 2 build, which is our "what still works" evidence |
 | `boundary/ConsoleUI` | Shows the type label and the locked bill in the queue and table lines | So the player can see who is VIP or Critic and the discounted price |
 
-**Unchanged:** `GameController`, `Waiter`, `Chef`, `Cashier`, `Order`, `Menu`, `MenuItem`,
-`Restaurant`, `Table`, `GameStats`, `Objective`, `Staff`.
+**Unchanged (17):** `GameController`, `Objective`, `Waiter`, `Chef`, `Cashier`, `Staff`,
+`Restaurant`, `Table`, `Order`, `OrderStatus`, `Menu`, `MenuItem`, `Money`, `GameStats`,
+`CustomerStatus`, `WaiterTask`, `InvalidActionException`.
 
 **What still works:** the seat, order, serve, eat and pay flow is the same for every customer
 type, and the three Stage 1 scripts give exactly their old results when run with `regular`
@@ -200,6 +204,8 @@ type, and the three Stage 1 scripts give exactly their old results when run with
 ### stage-2 → stage-3
 
 All changes: [compare stage-2...stage-3](https://github.com/Abhishek051105/sc2002/compare/stage-2...stage-3)
+
+**Change map (Java classes in `src/`):** stage-2 had 26. **5 added, 7 modified, 0 deleted, 19 unchanged**, so stage-3 has 31.
 
 Stage 3 extends Stage 2 instead of rebuilding it. Combos and the Host are new classes that plug
 into existing hierarchies (`MenuItem` and `Staff`). Happy Hour needed one real change: the
@@ -231,9 +237,10 @@ Waiter knowing which discount is running.
 | `control/Main` | Registers the two combos. New `stage2` argument keeps the Stage 2 menu | Setup is where new menu items belong. `stage2` and `regular` let the old scripts run on this build |
 | `boundary/ConsoleUI` | Happy Hour and Host prompts, Happy Hour status line, Host in the staff list | Input and display only; the rules stay in the controller and entities |
 
-**Unchanged:** `Chef`, `Cashier`, `Order`, `MenuItem`, `Table`, `GameStats`, `Objective`,
-`Staff`, `RegularCustomer`, `VIPCustomer`, `CriticCustomer`, `ArrivalSchedule`, `CustomerType`,
-`GameConfig`. Combos work with no change to `Order`, `Chef` or `CriticCustomer`: a `ComboMeal`
+**Unchanged (19):** `Chef`, `Cashier`, `Staff`, `Order`, `OrderStatus`, `MenuItem`, `Table`,
+`GameStats`, `Objective`, `Money`, `RegularCustomer`, `VIPCustomer`, `CriticCustomer`,
+`CustomerStatus`, `CustomerType`, `ArrivalSchedule`, `GameConfig`, `WaiterTask`,
+`InvalidActionException`. Combos work with no change to `Order`, `Chef` or `CriticCustomer`: a `ComboMeal`
 is a `MenuItem`, so `Order` reads its prep units, and the Critic picks Salad + Pasta by himself
 because it is now the most expensive item.
 
@@ -267,7 +274,7 @@ Every member's project-related AI chats, in order, are in [`ai-history/`](ai-his
 
 | Member | Stage 1 | Stage 2 | Stage 3 |
 |---|---|---|---|
-| Abhishek | [ai-history/stage-1/abhishek](ai-history/stage-1/abhishek/) | [ai-history/stage-2/abhishek](ai-history/stage-2/abhishek/) | to be added |
+| Abhishek | [ai-history/stage-1/abhishek](ai-history/stage-1/abhishek/) | [ai-history/stage-2/abhishek](ai-history/stage-2/abhishek/) | [ai-history/stage-3/abhishek](ai-history/stage-3/abhishek/) |
 | Aaryan | [ai-history/stage-1/aaryan](ai-history/stage-1/aaryan/) | [ai-history/stage-2/aaryan](ai-history/stage-2/aaryan/) | [ai-history/stage-3/aaryan](ai-history/stage-3/aaryan/) |
 | Aekas | [ai-history/stage-1/aekas](ai-history/stage-1/aekas/) | [ai-history/stage-2/aekas](ai-history/stage-2/aekas/) | to be added |
 | Ayush | [ai-history/stage-1/ayush](ai-history/stage-1/ayush/) | [ai-history/stage-2/ayush](ai-history/stage-2/ayush/) | [ai-history/stage-3/ayush](ai-history/stage-3/ayush/) |
