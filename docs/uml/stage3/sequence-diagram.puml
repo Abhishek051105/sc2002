@@ -168,9 +168,24 @@ GC -> R : addOrder(o)
 GC -> UI : showMessage("C4 ordered Salad + Pasta ($19.44).")
 end
 
+loop until the Chef has a valid order or 0 (Wait)
+GC -> UI : askOrderIdOrWait()
+UI -> Manager : prompt
+Manager --> UI : 4
+UI --> GC : 4
+GC -> GC : getOrderOrThrow(4)
+GC -> R : findOrder(4)
+R --> GC : o
+note right of GC : the Chef may cook an order the\nWaiter took this turn (Waiter acts first)
+GC -> R : getChef()
+R --> GC : chef
 GC -> CH : prepare(o)
+activate CH
 CH -> O : advanceOneUnit()
 note right of O : 1/3 units, still IN_PREPARATION
+CH --> GC
+deactivate CH
+end
 
 loop for each customer in restaurant.getAllCustomers()
 GC -> C : decreaseSatisfaction()
@@ -198,6 +213,7 @@ end
 C --> GC : true
 deactivate C
 GC -> UI : showMessage("C4 recovers to 100.")
+note right of GC : the manager picks order 4 for the Chef\nagain (same askOrderIdOrWait() loop)
 GC -> CH : prepare(o)
 CH -> O : advanceOneUnit()
 note right of O : 2/3 units
