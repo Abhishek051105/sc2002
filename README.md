@@ -288,12 +288,12 @@ and Stage 2 script gives exactly its old result on the Stage 3 build:
 
 ## AI history
 
-Each member keeps their AI chats for the project, in order, under `ai-history/` on their own branch.
+Every member's project-related AI chats, in order, are in [`ai-history/`](ai-history/), organised by stage: `ai-history/stage-N/<member>/` (index: [`ai-history/README.md`](ai-history/README.md)).
 
-| Member | Branch | Stage 1 | Stage 2 |
+| Member | Stage 1 | Stage 2 | Stage 3 |
 |---|---|---|---|
-| Abhishek | [`abhishek`](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history) | [ai-history/stage-1](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history/stage-1) | [ai-history/stage-2](https://github.com/Abhishek051105/sc2002/tree/abhishek/ai-history/stage-2) |
-| Aaryan | [`aaryan`](https://github.com/Abhishek051105/sc2002/tree/aaryan/ai-history) | [ai-history/stage-1](https://github.com/Abhishek051105/sc2002/tree/aaryan/ai-history/stage-1) | [ai-history/stage-2](https://github.com/Abhishek051105/sc2002/tree/aaryan/ai-history/stage-2) |
-| Aekas | [`aekas`](https://github.com/Abhishek051105/sc2002/tree/aekas/ai-history) | [ai-history/stage-1](https://github.com/Abhishek051105/sc2002/tree/aekas/ai-history/stage-1) | [ai-history/stage-2](https://github.com/Abhishek051105/sc2002/tree/aekas/ai-history/stage-2) |
-| Ayush | to be added | to be added | to be added |
+| Abhishek | to be added | to be added | to be added |
+| Aaryan | to be added | to be added | to be added |
+| Aekas | to be added | to be added | to be added |
+| Ayush | [ai-history/stage-1/ayush](ai-history/stage-1/ayush/) | [ai-history/stage-2/ayush](ai-history/stage-2/ayush/) | [ai-history/stage-3/ayush](ai-history/stage-3/ayush/) |
 | Raghav | to be added | to be added | to be added |
