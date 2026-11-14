@@ -214,6 +214,7 @@ orders Salad + Pasta and C5 orders Burger + Salad.
 | `tests/stage3_defeat.txt` | DEFEAT | 3 (fails the 4 target) | $40.50 (fails the $45 target) | 65.0 |
 | `tests/stage3_invalid_inputs.txt` | VICTORY | 5 | $81.54 | 84.6 |
 | `tests/stage3_slow_start_with_host.txt` | VICTORY | 4 | $64.80 | 72.3 |
+| `tests/stage3_abandonment.txt` | DEFEAT | 0 | $0.00 | N/A |
 
 ### Stage 3 victory run (`tests/stage3_victory.txt`)
 
@@ -288,6 +289,22 @@ pay before the game ends. The Host is the fix: `tests/stage3_slow_start_with_hos
 same wasted turns 1 to 3 and the same wasted Happy Hour, but lets the Host do the seating. The
 Waiter gets those turns back, the Critic pays on turn 16, and the run becomes a VICTORY (4 paid,
 $64.80, 72.3). The only difference between the two runs is whether the manager uses the Host.
+
+### Stage 3 abandonment (`tests/stage3_abandonment.txt`)
+
+Turns the hand-checked abandonment case into a script. On turn 1 the Host seats C1 at Table 1
+and the Waiter takes C1's Salad order; after that every staff member waits.
+
+| Turn | What happens |
+|---|---|
+| 1 | C1 seated, orders Salad (IN_PREPARATION, 0/1). C1 ends the turn at 92 |
+| 2-12 | Nobody acts. C1 loses 8 a turn while WAITING_FOR_FOOD; C2 to C4 wait in the queue |
+| 13 | C1 reaches 0: "C1 got fed up and left!" The order is CANCELLED, Table 1 is freed, 1 departure |
+| 14 | The Chef tries order 1 and is rejected ("Order 1 cannot be cooked, it is CANCELLED"), then waits. The Chef's task is not used up |
+| 18 | C4 (Critic, loses 12 a turn since turn 10) reaches 0 and leaves. 2 departures |
+
+Result: DEFEAT with all three targets failing (0 paid, $0.00, average N/A). Revenue never
+includes the abandoned order.
 
 ### Stage 3 invalid inputs (`tests/stage3_invalid_inputs.txt`)
 
