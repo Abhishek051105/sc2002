@@ -22,7 +22,7 @@ paid customers, at least $45.00 revenue and an average satisfaction of at least 
 | 5:15 | 6. One victory and one defeat, plus regression checks | Ayush |
 | 6:35 | 7. Stage tag comparisons (change maps) and the class diagrams | Raghav |
 | 9:15 | Design principles, trade-offs and alternatives | Aekas |
-| 10:45 | 7. Use case and sequence diagram | Abhishek |
+| 10:45 | Use case and sequence diagram | Abhishek |
 | 13:15 | Individual contributions and learning | Everyone |
 
 ## Build and run
